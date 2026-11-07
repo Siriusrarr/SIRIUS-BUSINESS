@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Sirius Business - Dashboard Orbital
 
 Esta entrega completa parte del ZIP Fase 2 e incorpora el nuevo dashboard espacial. No es necesario combinarla con ZIP anteriores.
@@ -299,3 +300,7 @@ Los registros operativos incluyen `businessId`. El backend filtra las consultas 
 Los planes son demostrativos y no hay cobros. Las integraciones quedan en estado pendiente hasta configurar credenciales y autorización del proveedor. La opción de publicar la tienda solo guarda un estado interno, no publica una tienda real. El beneficio es una estimación operativa, no un informe contable o fiscal.
 
 Antes de usar datos reales, hay que ejecutar y probar las migraciones, las rutas con PostgreSQL, el stock con ventas concurrentes, los permisos multiusuario, las copias de seguridad y el despliegue. La instalación de dependencias y la compilación completa no han podido verificarse en este entorno.
+=======
+# SIRIUS-BUSINESS
+Plataforma de gestión empresarial SIRIUS BUSINESS. Sistema de inventario, ventas, finanzas y administración de negocios.
+>>>>>>> 012bfb7a002e4bd6c0681bc1a6f63dbc6f8ae7bb
