@@ -1,0 +1,10 @@
+import { Router } from 'express';
+import { authenticate } from '../middleware/authenticate.js';
+import { requireBusiness } from '../middleware/requireBusiness.js';
+import * as c from '../controllers/businessController.js';
+const router=Router();router.use(authenticate);
+router.get('/business',c.getBusiness);router.post('/business',c.createBusiness);
+router.use(requireBusiness);
+router.patch('/business',c.updateBusiness);router.get('/dashboard',c.dashboard);router.get('/finance',c.getFinance);router.get('/sales',c.listSales);router.post('/sales',c.createSale);router.get('/tutorial',c.getTutorial);router.put('/tutorial',c.saveTutorial);router.get('/store',c.getStore);router.patch('/store',c.updateStore);router.get('/integrations',c.listIntegrations);router.post('/integrations',c.configureIntegration);router.get('/members',c.listMembers);router.post('/members',c.addMember);router.delete('/members/:id',c.removeMember);
+router.get('/:resource',c.listResource);router.post('/:resource',c.createResource);router.patch('/:resource/:id',c.updateResource);router.delete('/:resource/:id',c.deleteResource);
+export default router;
