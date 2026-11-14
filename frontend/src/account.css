@@ -196,3 +196,26 @@
 .account-card:nth-child(2) .account-icon svg{color:#9bc9f1}
 .account-card:nth-child(3) .account-icon svg{color:#e6d29c}
 .account-card:nth-child(4) .account-icon svg{color:#b8a9f3}
+
+
+/* Centrado óptico y geométrico de los iconos */
+.account-card-heading > .account-icon{
+  box-sizing:border-box;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:center!important;
+  padding:0!important;
+  line-height:0!important;
+  text-align:center!important;
+}
+.account-card-heading > .account-icon > svg{
+  display:block!important;
+  flex:0 0 23px!important;
+  width:23px!important;
+  height:23px!important;
+  margin:0!important;
+  padding:0!important;
+  transform:translate(0,0)!important;
+  overflow:visible;
+}
