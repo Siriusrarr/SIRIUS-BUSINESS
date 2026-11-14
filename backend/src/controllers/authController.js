@@ -8,6 +8,7 @@ import { HttpError } from '../utils/httpError.js';
 import {
   emailSchema,
   loginSchema,
+  profileSchema,
   readBody,
   registerSchema,
   resetPasswordSchema,
@@ -74,6 +75,15 @@ export async function me(req, res) {
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
   if (!user) throw new HttpError(401, 'La cuenta ya no está disponible.', 'UNAUTHENTICATED');
   return res.json({ user: publicUser(user) });
+}
+
+export async function updateProfile(req, res) {
+  const data = readBody(profileSchema, req.body);
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { name: data.name },
+  });
+  return res.json({ message: 'Información personal actualizada.', user: publicUser(user) });
 }
 
 export async function verifyEmail(req, res) {
