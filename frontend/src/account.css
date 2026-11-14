@@ -1,0 +1,38 @@
+
+/* Account administration */
+.account-page{max-width:1180px;margin:0 auto}
+.account-hero{display:flex;align-items:center;gap:20px;padding:27px 30px;margin-bottom:22px;border:1px solid rgba(155,230,211,.16);border-radius:15px;background:linear-gradient(115deg,rgba(39,75,77,.38),rgba(16,27,41,.88) 58%,rgba(39,44,75,.3))}
+.account-avatar{width:66px;height:66px;flex:none;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#a4ead8,#4e9d91);color:#10221f;font:800 27px 'Manrope',sans-serif}
+.account-hero h2{margin:8px 0 4px;color:#f0f5f5;font:700 25px 'Manrope',sans-serif}
+.account-hero p{margin:0;color:#93a2b0;font-size:12px}
+.account-status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid rgba(112,207,176,.2);border-radius:20px;color:#a9ead5;font-size:10px}
+.account-status i{width:6px;height:6px;border-radius:50%;background:#7bd9b5;box-shadow:0 0 9px #7bd9b5}
+.account-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.account-card{padding:23px!important;min-width:0}
+.account-card-heading{display:flex;align-items:center;gap:13px;margin-bottom:23px}
+.account-icon{width:39px;height:39px;display:grid;place-items:center;border:1px solid rgba(155,230,211,.17);border-radius:11px;background:rgba(155,230,211,.07);color:#9be6d3;font-size:20px}
+.account-card-heading h3,.account-danger h3{margin:0 0 5px;color:#eef4f5;font:700 14px 'Manrope',sans-serif}
+.account-card-heading p,.account-danger p{margin:0;color:#8395a5;font-size:10px;line-height:1.6}
+.account-detail{display:flex;justify-content:space-between;gap:15px;padding:13px 0;border-bottom:1px solid rgba(194,220,225,.08)}
+.account-detail span{color:#8294a4;font-size:11px}
+.account-detail strong{max-width:65%;overflow-wrap:anywhere;color:#dce7e8;text-align:right;font-size:11px;font-weight:600}
+.account-text-button{display:inline-block;margin-top:19px;padding:0;border:0;background:none;color:#9be6d3;font:600 11px 'DM Sans',sans-serif;text-decoration:none;cursor:pointer}
+.account-text-button:hover{color:#c0f5e9}
+.account-form{display:grid;gap:15px}
+.account-form label{display:grid;gap:8px;color:#c8d3d7;font-size:11px;font-weight:600}
+.account-form input{width:100%;min-height:43px;padding:0 12px;border:1px solid rgba(165,191,198,.17);border-radius:8px;background:#142232;color:#eef4f5;font-size:12px}
+.account-form input:disabled{opacity:.65;cursor:not-allowed}
+.account-form small{color:#708493;font-size:9px;font-weight:400}
+.account-actions{display:flex;gap:10px;flex-wrap:wrap}
+.account-actions .sb-primary,.account-actions .sb-secondary{padding:10px 15px}
+.account-hint{color:#8395a5;font-size:10px;line-height:1.7}
+.account-plan{display:grid;gap:8px;padding:18px;border:1px solid rgba(155,230,211,.13);border-radius:10px;background:rgba(155,230,211,.045)}
+.account-plan span{color:#83aaa5;font-size:9px;font-weight:700;letter-spacing:1.7px}
+.account-plan strong{color:#b8f1e2;font:700 22px 'Manrope',sans-serif}
+.account-plan small{color:#8093a1;font-size:10px;line-height:1.6}
+.account-danger{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:17px;padding:22px!important;border-color:rgba(231,119,119,.16)!important}
+.account-logout{padding:10px 15px;border:1px solid rgba(231,119,119,.35);border-radius:8px;background:rgba(231,119,119,.08);color:#ffb4b9;font-size:11px;font-weight:600;cursor:pointer}
+.account-message{margin:0 0 15px;padding:12px 14px;border-radius:8px;font-size:11px}
+.account-message.success{border:1px solid rgba(112,207,176,.25);background:rgba(112,207,176,.08);color:#a9ead5}
+.account-message.error{border:1px solid rgba(230,93,104,.25);background:rgba(230,93,104,.08);color:#ffb4b9}
+@media(max-width:760px){.account-grid{grid-template-columns:1fr}.account-hero{align-items:flex-start;flex-wrap:wrap;padding:21px}.account-status{margin-left:0}.account-danger{align-items:flex-start;flex-direction:column}}

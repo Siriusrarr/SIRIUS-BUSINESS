@@ -9,6 +9,7 @@ import {
   resendVerification,
   resetPassword,
   selectPlan,
+  updateProfile,
   verifyEmail,
 } from '../controllers/authController.js';
 import { authenticate } from '../middleware/authenticate.js';
@@ -26,6 +27,7 @@ router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
 router.post('/logout', logout);
 router.get('/me', authenticate, me);
+router.patch('/profile', authenticate, updateProfile);
 router.post('/select-plan', authenticate, selectPlan);
 router.post('/verify-email', authLimiter, verifyEmail);
 router.post('/resend-verification', authLimiter, resendVerification);
