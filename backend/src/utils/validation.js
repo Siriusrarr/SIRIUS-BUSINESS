@@ -10,6 +10,8 @@ const password = z.string()
 
 const personName = z.string().trim().min(2, 'Escribe un nombre válido.').max(80).regex(/^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]*$/u, 'El nombre no debe contener números ni símbolos no válidos.');
 
+export const profileSchema = z.object({ name: personName });
+
 export const registerSchema = z.object({
   name: personName,
   email,
