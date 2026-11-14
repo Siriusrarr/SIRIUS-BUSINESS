@@ -46,3 +46,5 @@
  .sb-guide-spotlight{border-radius:9px}
  .sb-guide-actions button{min-width:0;flex:1}
 }
+
+.sb-guide-card{max-height:calc(100vh - 36px);overflow:auto}
