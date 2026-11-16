@@ -216,7 +216,7 @@ export function SiriusAIPage() {
         <span className="sirius-ai-eyebrow"><Glyph name="spark" size={13}/> INTELIGENCIA EMPRESARIAL</span>
         <h2>Tu negocio tiene preguntas.<br/><em>Sirius tiene el espacio para responderlas.</em></h2>
         <p>Consulta ventas, inventario y resultados de tu empresa con información de tu propio espacio.</p>
-        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>{statusLoading ? 'Comprobando conexión…' : assistantReady ? 'Ghosty conectado · Consultas empresariales disponibles' : 'Falta configurar la conexión segura con Formmy'}</div>
+        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>Widget oficial de Ghosty integrado · Formmy</div>
       </div>
       <div className="sirius-ai-hero-art" aria-hidden="true"><SiriusMark/></div>
     </section>
@@ -248,28 +248,17 @@ export function SiriusAIPage() {
       </aside>
 
       <section className="sirius-ai-chat-area">
-        {messages.length ? <ChatMessages/> : <div className="sirius-ai-welcome">
+        <div className="sirius-ai-welcome">
           <SiriusMark small/>
           <span className="sirius-ai-welcome-label">SIRIUS AI · TU COPILOTO EMPRESARIAL</span>
-          <h2>¿Qué quieres resolver hoy?</h2>
-          <p>Empieza con una pregunta sobre los datos de tu negocio.</p>
+          <h2>Ghosty ya está integrado en Sirius.</h2>
+          <p>Abre la burbuja oficial de Formmy en la esquina inferior derecha para conversar con tu asistente.</p>
           <div className="sirius-ai-prompts">
-            {PROMPTS.map(item=><button className={draft===item.prompt?'selected':''} key={item.id} type="button" onClick={()=>setDraft(item.prompt)}>
+            {PROMPTS.map(item=><div className="sirius-ai-prompt-static" key={item.id}>
               <span className={'sirius-ai-prompt-icon sirius-ai-prompt-'+item.id}><Glyph name={item.icon} size={19}/></span>
               <span><strong>{item.title}</strong><small>{item.description}</small></span>
-              <Glyph name="arrow" size={16}/>
-            </button>)}
+            </div>)}
           </div>
-        </div>}
-        {historyLoading && <div className="sirius-ai-inline-status">Cargando conversación…</div>}
-        {assistantError && <div className="sirius-ai-error" role="alert">{assistantError}<button type="button" onClick={()=>setAssistantError('')}>×</button></div>}
-        {!assistantReady && !statusLoading && <div className="sirius-ai-setup-hint">Para activar el chat, configura <code>FORMMY_SECRET_KEY</code> y <code>FORMMY_AGENT_ID</code> en las variables privadas del backend.</div>}
-        <div className="sirius-ai-composer-wrap">
-          <form className="sirius-ai-composer" onSubmit={submit}>
-            <textarea rows="2" value={draft} onChange={event=>setDraft(event.target.value)} placeholder={assistantReady ? 'Pregúntale algo a Sirius sobre tu negocio…' : 'El chat se activará al configurar Formmy…'} disabled={!assistantReady || sending}/>
-            <button type="submit" disabled={!assistantReady || sending || !draft.trim()} aria-label="Enviar mensaje"><Glyph name="send" size={18}/></button>
-          </form>
-          <div className="sirius-ai-composer-foot"><span><Glyph name="history" size={12}/> Sirius consulta datos de tu negocio y no modifica registros</span><span>Powered by Sirius</span></div>
         </div>
       </section>
     </div>

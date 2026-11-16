@@ -9,7 +9,7 @@ import SetupPage from './pages/SetupPage.jsx';
 import WorkspacePage from './pages/WorkspacePage.jsx';
 import PlansPage from './pages/PlansPage.jsx';
 import AccountPage from './pages/AccountPage.jsx';
-import { SiriusAIProvider, SiriusAIFloating } from './components/SiriusAI.jsx';
+import { SiriusAIProvider } from './components/SiriusAI.jsx';
 import './styles.css';
 import './space.css';
 import './account.css';
@@ -52,7 +52,6 @@ function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    <SiriusAIFloating />
     </>
     </SiriusAIProvider>
   );
