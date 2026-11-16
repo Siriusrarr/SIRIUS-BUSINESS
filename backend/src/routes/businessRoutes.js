@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
 import { authenticate } from '../middleware/authenticate.js';
 import { requireBusiness } from '../middleware/requireBusiness.js';
 import * as c from '../controllers/businessController.js';
