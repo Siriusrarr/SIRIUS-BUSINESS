@@ -216,7 +216,7 @@ export function SiriusAIPage() {
         <span className="sirius-ai-eyebrow"><Glyph name="spark" size={13}/> INTELIGENCIA EMPRESARIAL</span>
         <h2>Tu negocio tiene preguntas.<br/><em>Sirius tiene el espacio para responderlas.</em></h2>
         <p>Consulta ventas, inventario y resultados de tu empresa con información de tu propio espacio.</p>
-        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>Widget oficial de Ghosty integrado · Formmy</div>
+        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/> {statusLoading ? 'Comprobando conexión con Ghosty…' : assistantReady ? 'Ghosty conectado · Consultas empresariales disponibles' : 'Conexión con Formmy pendiente'}</div>
       </div>
       <div className="sirius-ai-hero-art" aria-hidden="true"><SiriusMark/></div>
     </section>
@@ -248,18 +248,40 @@ export function SiriusAIPage() {
       </aside>
 
       <section className="sirius-ai-chat-area">
-        <div className="sirius-ai-welcome">
-          <SiriusMark small/>
-          <span className="sirius-ai-welcome-label">SIRIUS AI · TU COPILOTO EMPRESARIAL</span>
-          <h2>Ghosty ya está integrado en Sirius.</h2>
-          <p>Abre la burbuja oficial de Formmy en la esquina inferior derecha para conversar con tu asistente.</p>
-          <div className="sirius-ai-prompts">
-            {PROMPTS.map(item=><div className="sirius-ai-prompt-static" key={item.id}>
-              <span className={'sirius-ai-prompt-icon sirius-ai-prompt-'+item.id}><Glyph name={item.icon} size={19}/></span>
-              <span><strong>{item.title}</strong><small>{item.description}</small></span>
-            </div>)}
+        {messages.length ? (
+          <div className="sirius-ai-conversation-view">
+            <div className="sirius-ai-conversation-heading">
+              <SiriusMark small/>
+              <div><strong>{conversations.find(item=>item.id===activeConversationId)?.title || 'Conversación con Sirius AI'}</strong><small>Contexto privado de tu negocio</small></div>
+            </div>
+            <ChatMessages/>
+            {historyLoading && <p className="sirius-ai-draft-note">Cargando conversación…</p>}
           </div>
-        </div>
+        ) : (
+          <div className="sirius-ai-welcome">
+            <SiriusMark small/>
+            <span className="sirius-ai-welcome-label">SIRIUS AI · TU COPILOTO EMPRESARIAL</span>
+            <h2>¿Qué quieres resolver hoy?</h2>
+            <p>Empieza con una pregunta sobre los datos de tu negocio.</p>
+            <div className="sirius-ai-prompts">
+              {PROMPTS.map(item=><button type="button" key={item.id} onClick={()=>setDraft(item.prompt)}>
+                <span className={'sirius-ai-prompt-icon sirius-ai-prompt-'+item.id}><Glyph name={item.icon} size={19}/></span>
+                <span><strong>{item.title}</strong><small>{item.description}</small></span>
+                <Glyph name="arrow" size={15}/>
+              </button>)}
+            </div>
+          </div>
+        )}
+
+        {assistantError && <div className="sirius-ai-error" role="alert">{assistantError}<button type="button" onClick={()=>setAssistantError('')} aria-label="Cerrar aviso">×</button></div>}
+        {!assistantReady && !statusLoading && <p className="sirius-ai-setup-note">La conexión con Formmy no está lista. Revisa las variables privadas FORMMY_SECRET_KEY y FORMMY_AGENT_ID en Render.</p>}
+        <form className="sirius-ai-composer-wrap" onSubmit={submit}>
+          <div className="sirius-ai-composer">
+            <textarea rows="2" value={draft} onChange={event=>setDraft(event.target.value)} placeholder={assistantReady ? 'Pregunta sobre las ventas, inventario o finanzas de tu negocio…' : 'El chat se activará al configurar Formmy…'} disabled={!assistantReady || sending}/>
+            <button type="submit" disabled={!assistantReady || sending || !draft.trim()} aria-label="Enviar mensaje"><Glyph name="send" size={17}/></button>
+          </div>
+          <div className="sirius-ai-composer-foot"><span>{sending ? 'Sirius está consultando los datos de tu negocio…' : 'Sirius consulta tus datos y no modifica registros'}</span><span>Powered by Formmy</span></div>
+        </form>
       </section>
     </div>
     <p className="sirius-ai-disclaimer">Las respuestas se generan con Formmy a partir de un resumen actualizado de los datos del negocio autenticado. Esta versión permite consultas; no ejecuta cambios.</p>
