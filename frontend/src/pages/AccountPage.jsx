@@ -46,7 +46,7 @@ export default function AccountPage() {
 
   function changeBusiness(event) {
     const { name, value } = event.target;
-    const cleanValue = name === 'phone' ? value.replace(/[^0-9+()\\s.-]/g, '').slice(0, 20) : name === 'city' ? value.replace(/[^\\p{L}\\p{M}\\s.'’-]/gu, '').replace(/\\s{2,}/g, ' ') : value;
+    const cleanValue = name === 'phone' ? value.replace(/[^0-9+()\s.-]/g, '').slice(0, 20) : name === 'city' ? value.replace(/[^\p{L}\p{M}\s.'’-]/gu, '').replace(/\s{2,}/g, ' ') : value;
     setBusinessForm(current => ({ ...current, [name]: cleanValue }));
   }
 
