@@ -219,3 +219,40 @@
   transform:translate(0,0)!important;
   overflow:visible;
 }
+
+
+/* Configuración empresarial dentro de Mi cuenta */
+.account-business-card{
+  grid-column:1/-1;
+  display:grid!important;
+  gap:22px!important;
+  padding:28px!important;
+  border-color:rgba(155,230,211,.17)!important;
+  background:linear-gradient(145deg,rgba(21,33,51,.98),rgba(15,24,39,.98))!important;
+}
+.account-business-heading{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:18px;
+  padding-bottom:18px;border-bottom:1px solid rgba(165,191,198,.12);
+}
+.account-business-heading h3{margin:9px 0 5px;color:#eef5f5;font:750 21px 'Manrope',sans-serif;letter-spacing:-.4px}
+.account-business-heading p{margin:0;color:#91a3b1;font-size:11px;line-height:1.6}
+.account-business-badge{
+  flex:none;padding:7px 10px;border:1px solid rgba(155,230,211,.17);
+  border-radius:20px;background:rgba(155,230,211,.055);
+  color:#9bdcc9;font-size:8px;font-weight:750;letter-spacing:1.1px;
+}
+.account-business-form{max-width:900px;gap:17px}
+.account-business-form label{font-size:11px}
+.account-business-form input{min-height:47px;padding:0 14px;font-size:12px}
+.account-business-form input:disabled{opacity:.75;background:#0e1928}
+.account-business-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.account-business-form .account-actions{padding-top:3px}
+.account-business-form .sb-primary{min-width:190px;min-height:43px}
+.account-business-loading,.account-business-empty p{margin:0;color:#94a7b5;font-size:11px;line-height:1.7}
+.account-business-readonly{color:#d8c38e;font-size:10px;line-height:1.6}
+@media(max-width:650px){
+ .account-business-card{padding:21px!important}
+ .account-business-heading{flex-direction:column}
+ .account-business-row{grid-template-columns:1fr}
+ .account-business-form .sb-primary{width:100%}
+}
