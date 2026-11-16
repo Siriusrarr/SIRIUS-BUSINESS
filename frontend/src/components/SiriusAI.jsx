@@ -216,7 +216,7 @@ export function SiriusAIPage() {
         <span className="sirius-ai-eyebrow"><Glyph name="spark" size={13}/> INTELIGENCIA EMPRESARIAL</span>
         <h2>Tu negocio tiene preguntas.<br/><em>Sirius tiene el espacio para responderlas.</em></h2>
         <p>Consulta ventas, inventario y resultados de tu empresa con información de tu propio espacio.</p>
-        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>{statusLoading ? 'Comprobando conexión…' : assistantReady ? 'Ghosty conectado · Consultas empresariales disponibles' : 'Falta configurar la conexión segura con Formmy'}</div>
+        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>Widget oficial de Ghosty integrado · Formmy</div>
       </div>
       <div className="sirius-ai-hero-art" aria-hidden="true"><SiriusMark/></div>
     </section>
