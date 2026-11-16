@@ -222,28 +222,51 @@ export async function sendAssistantMessage(req, res) {
     throw new HttpError(502, 'Formmy no pudo responder en este momento. Inténtalo de nuevo.', 'FORMMY_REQUEST_FAILED');
   }
 
-  if (typeof answer?.content !== 'string' || !answer.content.trim() || typeof answer?.conversationId !== 'string') {
-    console.error('Respuesta Formmy con formato inesperado para Sirius AI:', {
+  // Formmy SDK 0.2.x expone el texto como "message" en algunas respuestas;
+  // otras versiones/transportes pueden usar "content" o "text".
+  const answerText = [
+    answer?.message,
+    answer?.content,
+    answer?.text,
+    answer?.response?.message,
+    answer?.response?.content,
+    answer?.response?.text,
+  ].find((value) => typeof value === 'string' && value.trim());
+
+  const providerConversationId = [
+    answer?.conversationId,
+    answer?.sessionId,
+    answer?.conversation?.id,
+    answer?.data?.conversationId,
+    answer?.data?.sessionId,
+    existingConversation?.providerConversationId,
+  ].find((value) => typeof value === 'string' && value.trim()) || null;
+
+  if (!answerText) {
+    console.error('Formmy no devolvió texto para Sirius AI:', {
       responseType: typeof answer,
       responseKeys: answer && typeof answer === 'object' ? Object.keys(answer) : [],
-      contentType: typeof answer?.content,
-      conversationIdType: typeof answer?.conversationId,
+      nestedResponseKeys: answer?.response && typeof answer.response === 'object' ? Object.keys(answer.response) : [],
     });
-    throw new HttpError(502, 'Formmy recibió la consulta, pero no devolvió el texto o el identificador de conversación esperado. Revisa los registros del servicio en Render.', 'FORMMY_INVALID_RESPONSE');
+    throw new HttpError(502, 'Formmy recibió la consulta, pero no devolvió el texto de respuesta. Revisa la configuración del agente en Formmy.', 'FORMMY_EMPTY_RESPONSE');
+  }
+
+  if (!providerConversationId) {
+    console.warn('Formmy devolvió texto sin identificador de conversación; se guardará el historial local sin continuidad del proveedor.');
   }
 
   const conversation = await prisma.$transaction(async (tx) => {
     const savedConversation = existingConversation
       ? await tx.assistantConversation.update({
           where: { id: existingConversation.id },
-          data: { providerConversationId: answer.conversationId },
+          data: { providerConversationId },
           select: { id: true, title: true, createdAt: true, updatedAt: true },
         })
       : await tx.assistantConversation.create({
           data: {
             businessId: req.business.id,
             userId: req.user.id,
-            providerConversationId: answer.conversationId,
+            providerConversationId,
             title: message.slice(0, 100),
           },
           select: { id: true, title: true, createdAt: true, updatedAt: true },
@@ -253,7 +276,7 @@ export async function sendAssistantMessage(req, res) {
       data: { conversationId: savedConversation.id, role: 'user', content: message },
     });
     const assistantMessage = await tx.assistantMessage.create({
-      data: { conversationId: savedConversation.id, role: 'assistant', content: answer.content.trim() },
+      data: { conversationId: savedConversation.id, role: 'assistant', content: answerText.trim() },
     });
 
     return { ...savedConversation, userMessage, assistantMessage };
