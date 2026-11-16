@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/httpError.js';
 const clean=v=>typeof v==='string'?v.trim():v;
 const validName=v=>typeof v==='string' && /^[\p{L}\p{M}][\p{L}\p{M}\s.'’-]*$/u.test(v.trim());
+const validLocation=v=>typeof v==='string' && /^[\\p{L}\\p{M}][\\p{L}\\p{M}\\s,.'’-]*$/u.test(v.trim());
 const validPhone=v=>typeof v==='string' && /^[0-9+() .-]{7,20}$/.test(v.trim());
 const slugify=v=>v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,80)||'mi-negocio';
 export async function getBusiness(req,res){const business=await prisma.business.findFirst({where:{OR:[{ownerId:req.user.id},{members:{some:{userId:req.user.id,active:true}}}]},include:{store:true}});res.json({business});}
