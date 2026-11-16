@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { authApi } from '../services/api.js';
 import { businessApi } from '../services/businessApi.js';
+import { BusinessCategoryField, BusinessLocationField } from '../components/BusinessProfileFields.jsx';
 
 const planNames = { free: 'Gratis', entrepreneur: 'Emprendedor', business_pro: 'Business Pro' };
 
@@ -98,11 +99,9 @@ export default function AccountPage() {
       {businessLoading ? <p className="account-business-loading">Cargando la información de tu negocio…</p> : !business ? <div className="account-business-empty"><p>No encontramos un espacio empresarial asociado a tu cuenta.</p><Link className="account-text-button" to="/setup">Configurar mi negocio ↗</Link></div> : <>
         <form className="account-form account-business-form" onSubmit={saveBusiness}>
           <label>Nombre del negocio<input name="name" value={businessForm.name} onChange={changeBusiness} required minLength={2} maxLength={120} placeholder="Ej. Café Aurora" disabled={business.ownerId !== user?.id}/></label>
-          <label>Actividad o sector<input name="category" value={businessForm.category} onChange={changeBusiness} maxLength={80} placeholder="Ej. Alimentación, ropa, tecnología" disabled={business.ownerId !== user?.id}/></label>
-          <div className="account-business-row">
-            <label>Teléfono<input name="phone" type="tel" inputMode="tel" pattern="[0-9+() .-]{7,20}" title="Introduce un teléfono válido usando números." value={businessForm.phone} onChange={changeBusiness} maxLength={20} placeholder="Número de contacto" disabled={business.ownerId !== user?.id}/></label>
-            <label>Ciudad<input name="city" value={businessForm.city} onChange={changeBusiness} maxLength={100} pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ .’'-]*" title="Escribe una ciudad sin números." placeholder="Ej. Montería" disabled={business.ownerId !== user?.id}/></label>
-          </div>
+          <BusinessCategoryField value={businessForm.category} disabled={business.ownerId !== user?.id} onChange={value=>setBusinessForm(current=>({...current,category:value}))}/>
+          <label>Teléfono<input name="phone" type="tel" inputMode="tel" pattern="[0-9+() .-]{7,20}" title="Introduce un teléfono válido usando números." value={businessForm.phone} onChange={changeBusiness} maxLength={20} placeholder="Número de contacto" disabled={business.ownerId !== user?.id}/></label>
+          <BusinessLocationField value={businessForm.city} disabled={business.ownerId !== user?.id} onChange={value=>setBusinessForm(current=>({...current,city:value}))}/>
           <label>NIT o documento (opcional)<input name="taxId" value={businessForm.taxId} onChange={changeBusiness} maxLength={40} placeholder="Los números y guiones están permitidos" disabled={business.ownerId !== user?.id}/></label>
           {business.ownerId === user?.id ? <div className="account-actions"><button className="sb-primary" disabled={businessBusy}>{businessBusy ? 'Guardando cambios…' : 'Guardar cambios'}</button></div> : <small className="account-business-readonly">Solo la persona propietaria del negocio puede modificar esta información.</small>}
         </form>
