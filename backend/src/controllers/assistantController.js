@@ -27,7 +27,6 @@ async function buildBusinessSnapshot(businessId, business) {
   const now = new Date();
   const todayStart = dateAtStartOfColombiaDay(now);
   const monthStart = new Date(todayStart);
-  const local = new Date(now.toLocaleString('en-US', { timeZone: 'America/Bogota' }));
   monthStart.setUTCDate(1);
   const [products, salesSummary, todaySummary, saleItems, expensesSummary, recentSales, customerCount] = await Promise.all([
     prisma.product.findMany({
@@ -191,7 +190,7 @@ export async function sendAssistantMessage(req, res) {
 
   let existingConversation = null;
   if (req.body?.conversationId) {
-    if (typeof req.body.conversationId !== 'string' || req.body.conversationId.length > 64) {
+    if (typeof req.body.conversationId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.body.conversationId)) {
       throw new HttpError(400, 'La conversación seleccionada no es válida.', 'INVALID_CONVERSATION');
     }
     existingConversation = await prisma.assistantConversation.findFirst({
