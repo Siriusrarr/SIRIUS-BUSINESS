@@ -1,13 +1,119 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { assistantApi } from '../services/assistantApi.js';
 
 const SiriusAIContext = createContext(null);
 
 export function SiriusAIProvider({ children }) {
+  const { user } = useAuth();
   const [floatingOpen, setFloatingOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const [fullPageRequested, setFullPageRequested] = useState(false);
+  const [assistantReady, setAssistantReady] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [conversations, setConversations] = useState([]);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [sending, setSending] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [assistantError, setAssistantError] = useState('');
+
+  const refreshConversations = useCallback(async () => {
+    const result = await assistantApi.conversations();
+    setConversations(result.items || []);
+    return result.items || [];
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    if (!user?.id) {
+      setAssistantReady(false);
+      setStatusLoading(false);
+      setConversations([]);
+      setActiveConversationId(null);
+      setMessages([]);
+      setAssistantError('');
+      return () => { active = false; };
+    }
+
+    setStatusLoading(true);
+    Promise.all([assistantApi.status(), assistantApi.conversations()])
+      .then(([status, history]) => {
+        if (!active) return;
+        setAssistantReady(Boolean(status.ready));
+        setConversations(history.items || []);
+        setAssistantError('');
+      })
+      .catch((error) => {
+        if (active) {
+          setAssistantReady(false);
+          setAssistantError(error.message);
+        }
+      })
+      .finally(() => { if (active) setStatusLoading(false); });
+
+    return () => { active = false; };
+  }, [user?.id]);
+
+  const startConversation = useCallback(() => {
+    setActiveConversationId(null);
+    setMessages([]);
+    setDraft('');
+    setAssistantError('');
+  }, []);
+
+  const openConversation = useCallback(async (id) => {
+    setHistoryLoading(true);
+    setAssistantError('');
+    try {
+      const result = await assistantApi.conversation(id);
+      setActiveConversationId(result.conversation.id);
+      setMessages(result.conversation.messages || []);
+      setDraft('');
+    } catch (error) {
+      setAssistantError(error.message);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  const sendMessage = useCallback(async (rawMessage) => {
+    const message = String(rawMessage || '').trim();
+    if (!message || sending || !assistantReady) return;
+    setSending(true);
+    setAssistantError('');
+    setDraft('');
+    try {
+      const result = await assistantApi.send(message, activeConversationId);
+      const conversation = result.conversation;
+      setActiveConversationId(conversation.id);
+      setMessages((current) => [
+        ...current,
+        conversation.userMessage,
+        conversation.assistantMessage,
+      ]);
+      setConversations((current) => [
+        conversation,
+        ...current.filter((item) => item.id !== conversation.id),
+      ].slice(0, 30));
+    } catch (error) {
+      setAssistantError(error.message);
+      setDraft(message);
+    } finally {
+      setSending(false);
+    }
+  }, [activeConversationId, assistantReady, sending]);
+
+  const deleteConversation = useCallback(async (id) => {
+    try {
+      await assistantApi.deleteConversation(id);
+      setConversations((current) => current.filter((item) => item.id !== id));
+      if (activeConversationId === id) startConversation();
+    } catch (error) {
+      setAssistantError(error.message);
+    }
+  }, [activeConversationId, startConversation]);
 
   const value = {
     floatingOpen,
@@ -17,7 +123,21 @@ export function SiriusAIProvider({ children }) {
     fullPageRequested,
     requestFullPage() { setFloatingOpen(false); setFullPageRequested(true); },
     consumeFullPageRequest() { setFullPageRequested(false); },
-    clearDraft() { setDraft(''); }
+    clearDraft: startConversation,
+    assistantReady,
+    statusLoading,
+    conversations,
+    activeConversationId,
+    messages,
+    sending,
+    historyLoading,
+    assistantError,
+    setAssistantError,
+    startConversation,
+    openConversation,
+    sendMessage,
+    deleteConversation,
+    refreshConversations,
   };
 
   return <SiriusAIContext.Provider value={value}>{children}</SiriusAIContext.Provider>;
@@ -64,16 +184,39 @@ function SiriusMark({ small = false }) {
   </span>;
 }
 
+function ChatMessages({ compact = false }) {
+  const { messages, sending } = useSiriusAI();
+  const visibleMessages = compact ? messages.slice(-4) : messages;
+  return <div className={compact ? 'sirius-ai-messages compact' : 'sirius-ai-messages'}>
+    {visibleMessages.map((message) => (
+      <article key={message.id} className={'sirius-ai-message '+(message.role === 'user' ? 'from-user' : 'from-ai')}>
+        <span>{message.role === 'user' ? 'Tú' : 'Sirius AI'}</span>
+        <p>{message.content}</p>
+      </article>
+    ))}
+    {sending && <article className="sirius-ai-message from-ai"><span>Sirius AI</span><p className="sirius-ai-typing">Analizando los datos de tu negocio…</p></article>}
+  </div>;
+}
+
 export function SiriusAIPage() {
-  const { draft, setDraft, clearDraft } = useSiriusAI();
+  const {
+    draft, setDraft, clearDraft, assistantReady, statusLoading, conversations,
+    activeConversationId, messages, sending, historyLoading, assistantError,
+    setAssistantError, openConversation, sendMessage, deleteConversation,
+  } = useSiriusAI();
+
+  function submit(event) {
+    event.preventDefault();
+    sendMessage(draft);
+  }
 
   return <div className="sb-content sirius-ai-page">
     <section className="sirius-ai-hero">
       <div className="sirius-ai-hero-copy">
         <span className="sirius-ai-eyebrow"><Glyph name="spark" size={13}/> INTELIGENCIA EMPRESARIAL</span>
         <h2>Tu negocio tiene preguntas.<br/><em>Sirius tiene el espacio para responderlas.</em></h2>
-        <p>Un lugar para entender tus números, explorar oportunidades y aprender a gestionar tu negocio con más claridad.</p>
-        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/> Centro de inteligencia preparado <span className="sirius-ai-meta-divider"/> Motor IA pendiente de conexión</div>
+        <p>Consulta ventas, inventario y resultados de tu empresa con información de tu propio espacio.</p>
+        <div className="sirius-ai-hero-meta"><span className="sirius-ai-status-dot"/>{statusLoading ? 'Comprobando conexión…' : assistantReady ? 'Ghosty conectado · Consultas empresariales disponibles' : 'Falta configurar la conexión segura con Formmy'}</div>
       </div>
       <div className="sirius-ai-hero-art" aria-hidden="true"><SiriusMark/></div>
     </section>
@@ -82,23 +225,34 @@ export function SiriusAIPage() {
       <aside className="sirius-ai-history">
         <div className="sirius-ai-history-head">
           <div><span className="sirius-ai-eyebrow">TU ESPACIO</span><h3>Conversaciones</h3></div>
-          <span className="sirius-ai-history-count">0</span>
+          <span className="sirius-ai-history-count">{conversations.length}</span>
         </div>
         <button className="sirius-ai-new-chat" type="button" onClick={clearDraft}><Glyph name="plus" size={16}/> Nueva conversación</button>
-        <div className="sirius-ai-history-empty">
-          <span><Glyph name="history" size={19}/></span>
-          <strong>Tu historial comenzará aquí</strong>
-          <p>Cuando conectemos el asistente, tus conversaciones se organizarán en este espacio.</p>
+        <div className="sirius-ai-history-list">
+          {conversations.map((item) => (
+            <div key={item.id} className={'sirius-ai-history-item'+(activeConversationId===item.id?' active':'')}>
+              <button type="button" onClick={()=>openConversation(item.id)}>
+                <strong>{item.title}</strong>
+                <small>{new Date(item.updatedAt).toLocaleDateString('es-CO')}</small>
+              </button>
+              <button type="button" aria-label="Eliminar conversación" onClick={()=>deleteConversation(item.id)}>×</button>
+            </div>
+          ))}
+          {!conversations.length && <div className="sirius-ai-history-empty">
+            <span><Glyph name="history" size={19}/></span>
+            <strong>Tu historial comenzará aquí</strong>
+            <p>Las conversaciones que tengas con Sirius aparecerán en esta lista.</p>
+          </div>}
         </div>
-        <div className="sirius-ai-history-foot"><span className="sirius-ai-lock-dot"/> Historial privado de tu espacio</div>
+        <div className="sirius-ai-history-foot"><span className="sirius-ai-lock-dot"/> Historial privado de tu cuenta y negocio</div>
       </aside>
 
       <section className="sirius-ai-chat-area">
-        <div className="sirius-ai-welcome">
+        {messages.length ? <ChatMessages/> : <div className="sirius-ai-welcome">
           <SiriusMark small/>
           <span className="sirius-ai-welcome-label">SIRIUS AI · TU COPILOTO EMPRESARIAL</span>
           <h2>¿Qué quieres resolver hoy?</h2>
-          <p>Elige un punto de partida. Pronto podrás conversar con Sirius sobre la información real de tu negocio.</p>
+          <p>Empieza con una pregunta sobre los datos de tu negocio.</p>
           <div className="sirius-ai-prompts">
             {PROMPTS.map(item=><button className={draft===item.prompt?'selected':''} key={item.id} type="button" onClick={()=>setDraft(item.prompt)}>
               <span className={'sirius-ai-prompt-icon sirius-ai-prompt-'+item.id}><Glyph name={item.icon} size={19}/></span>
@@ -106,23 +260,28 @@ export function SiriusAIPage() {
               <Glyph name="arrow" size={16}/>
             </button>)}
           </div>
-        </div>
+        </div>}
+        {historyLoading && <div className="sirius-ai-inline-status">Cargando conversación…</div>}
+        {assistantError && <div className="sirius-ai-error" role="alert">{assistantError}<button type="button" onClick={()=>setAssistantError('')}>×</button></div>}
+        {!assistantReady && !statusLoading && <div className="sirius-ai-setup-hint">Para activar el chat, configura <code>FORMMY_SECRET_KEY</code> y <code>FORMMY_AGENT_ID</code> en las variables privadas del backend.</div>}
         <div className="sirius-ai-composer-wrap">
-          {draft && <div className="sirius-ai-draft-note">Punto de partida seleccionado. Se activará cuando conectemos el asistente.</div>}
-          <div className="sirius-ai-composer">
-            <textarea rows="2" value={draft} onChange={event=>setDraft(event.target.value)} placeholder="El chat estará disponible al conectar Ghosty AI…" disabled/>
-            <button type="button" disabled aria-label="Enviar mensaje"><Glyph name="send" size={18}/></button>
-          </div>
-          <div className="sirius-ai-composer-foot"><span><Glyph name="history" size={12}/> Las conversaciones aparecerán aquí después de conectar Ghosty</span><span>Powered by Sirius</span></div>
+          <form className="sirius-ai-composer" onSubmit={submit}>
+            <textarea rows="2" value={draft} onChange={event=>setDraft(event.target.value)} placeholder={assistantReady ? 'Pregúntale algo a Sirius sobre tu negocio…' : 'El chat se activará al configurar Formmy…'} disabled={!assistantReady || sending}/>
+            <button type="submit" disabled={!assistantReady || sending || !draft.trim()} aria-label="Enviar mensaje"><Glyph name="send" size={18}/></button>
+          </form>
+          <div className="sirius-ai-composer-foot"><span><Glyph name="history" size={12}/> Sirius consulta datos de tu negocio y no modifica registros</span><span>Powered by Sirius</span></div>
         </div>
       </section>
     </div>
-    <p className="sirius-ai-disclaimer">SIRIUS AI · La interfaz está preparada. Las respuestas inteligentes y el acceso a datos empresariales se habilitarán al integrar el proveedor de IA.</p>
+    <p className="sirius-ai-disclaimer">Las respuestas se generan con Formmy a partir de un resumen actualizado de los datos del negocio autenticado. Esta versión permite consultas; no ejecuta cambios.</p>
   </div>;
 }
 
 export function SiriusAIFloating() {
-  const { floatingOpen, setFloatingOpen, draft, setDraft, requestFullPage } = useSiriusAI();
+  const {
+    floatingOpen, setFloatingOpen, draft, setDraft, requestFullPage, assistantReady,
+    messages, sending, assistantError, sendMessage,
+  } = useSiriusAI();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -130,6 +289,11 @@ export function SiriusAIFloating() {
 
   useEffect(() => { if (!visible) setFloatingOpen(false); }, [visible, setFloatingOpen]);
   if (!visible) return null;
+
+  function submit(event) {
+    event.preventDefault();
+    sendMessage(draft);
+  }
 
   return <div className="sirius-ai-floating-root">
     {floatingOpen && <section className="sirius-ai-float-panel" aria-label="Asistente Sirius AI">
@@ -141,15 +305,18 @@ export function SiriusAIFloating() {
         </div>
       </header>
       <div className="sirius-ai-float-body">
-        <div className="sirius-ai-float-welcome"><SiriusMark small/><strong>¡Hola! Soy Sirius.</strong><p>Tu espacio de inteligencia empresarial se está preparando.</p></div>
-        <div className="sirius-ai-float-status"><span className="sirius-ai-status-dot"/> Conexión con Ghosty AI pendiente</div>
+        {messages.length
+          ? <ChatMessages compact/>
+          : <div className="sirius-ai-float-welcome"><SiriusMark small/><strong>¡Hola! Soy Sirius.</strong><p>Puedo responder preguntas sobre la información de tu negocio.</p></div>}
+        {!assistantReady && <div className="sirius-ai-float-status">Falta configurar la conexión con Formmy.</div>}
+        {assistantError && <p className="sirius-ai-error" role="alert">{assistantError}</p>}
         <div className="sirius-ai-float-suggestions">
           {PROMPTS.slice(0,3).map(item=><button key={item.id} type="button" className={draft===item.prompt?'selected':''} onClick={()=>setDraft(item.prompt)}><Glyph name={item.icon} size={15}/>{item.title}</button>)}
         </div>
-        <div className="sirius-ai-float-composer">
-          <textarea rows="2" value={draft} placeholder="El chat se activará al conectar Ghosty…" disabled/>
-          <button type="button" disabled aria-label="Enviar mensaje"><Glyph name="send" size={16}/></button>
-        </div>
+        <form className="sirius-ai-float-composer" onSubmit={submit}>
+          <textarea rows="2" value={draft} onChange={event=>setDraft(event.target.value)} placeholder="Pregunta sobre tu negocio…" disabled={!assistantReady || sending}/>
+          <button type="submit" disabled={!assistantReady || sending || !draft.trim()} aria-label="Enviar mensaje"><Glyph name="send" size={16}/></button>
+        </form>
         <button className="sirius-ai-open-full" type="button" onClick={()=>{requestFullPage();navigate('/');}}>Abrir centro de Sirius AI <Glyph name="arrow" size={15}/></button>
       </div>
     </section>}
