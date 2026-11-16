@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const SiriusAIContext = createContext(null);
@@ -122,10 +123,12 @@ export function SiriusAIPage() {
 
 export function SiriusAIFloating() {
   const { floatingOpen, setFloatingOpen, draft, setDraft, requestFullPage } = useSiriusAI();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const visible = location.pathname === '/' || location.pathname === '/account';
+  const visible = Boolean(user) && (location.pathname === '/' || location.pathname === '/account');
 
+  useEffect(() => { if (!visible) setFloatingOpen(false); }, [visible, setFloatingOpen]);
   if (!visible) return null;
 
   return <div className="sirius-ai-floating-root">
