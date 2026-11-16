@@ -13,6 +13,7 @@ import { SiriusAIProvider, SiriusAIFloating } from './components/SiriusAI.jsx';
 import './styles.css';
 import './space.css';
 import './account.css';
+import './sirius-ai.css';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
