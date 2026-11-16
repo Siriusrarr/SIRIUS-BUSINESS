@@ -275,3 +275,5 @@
 .sb-setup-form>.sb-location-field{margin:0}
 .sb-setup-form>.sb-location-field label{color:#cbd7dc}
 @media(max-width:650px){.sb-location-field select,.sb-location-field input{min-height:46px}}
+
+.sb-setup-form .sb-form-row{grid-template-columns:1fr}
