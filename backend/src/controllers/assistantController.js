@@ -223,7 +223,13 @@ export async function sendAssistantMessage(req, res) {
   }
 
   if (typeof answer?.content !== 'string' || !answer.content.trim() || typeof answer?.conversationId !== 'string') {
-    throw new HttpError(502, 'Formmy devolvió una respuesta incompleta. Revisa el agente configurado.', 'FORMMY_INVALID_RESPONSE');
+    console.error('Respuesta Formmy con formato inesperado para Sirius AI:', {
+      responseType: typeof answer,
+      responseKeys: answer && typeof answer === 'object' ? Object.keys(answer) : [],
+      contentType: typeof answer?.content,
+      conversationIdType: typeof answer?.conversationId,
+    });
+    throw new HttpError(502, 'Formmy recibió la consulta, pero no devolvió el texto o el identificador de conversación esperado. Revisa los registros del servicio en Render.', 'FORMMY_INVALID_RESPONSE');
   }
 
   const conversation = await prisma.$transaction(async (tx) => {
