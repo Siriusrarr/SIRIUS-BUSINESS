@@ -29,8 +29,8 @@ export default function SetupPage() {
     <BusinessCategoryField value={form.category} onChange={value=>setForm(current=>({...current,category:value}))}/>
     <div className="sb-form-row">
       <label>Teléfono<input name="phone" type="tel" inputMode="tel" pattern="[0-9+() .-]{7,20}" title="Introduce un teléfono válido usando números." value={form.phone} onChange={change} maxLength="20" /></label>
-      <BusinessLocationField value={form.city} onChange={value=>setForm(current=>({...current,city:value}))}/>
     </div>
+    <BusinessLocationField value={form.city} onChange={value=>setForm(current=>({...current,city:value}))}/>
     <label>NIT o documento (opcional)<input name="taxId" value={form.taxId} onChange={change} inputMode="text" maxLength="40" placeholder="Los números y guiones están permitidos" /></label>
     {error && <p className="sb-error">{error}</p>}
     <button className="sb-primary" disabled={busy}>{busy ? 'Creando espacio…' : 'Crear mi espacio empresarial'}</button>
