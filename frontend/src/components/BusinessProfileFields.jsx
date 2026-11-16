@@ -25,13 +25,14 @@ export const BUSINESS_CATEGORIES = [
 export function BusinessCategoryField({ value, onChange, disabled = false }) {
   const isKnown = BUSINESS_CATEGORIES.includes(value);
   const [other, setOther] = useState(isKnown || !value ? '' : value);
-  const selected = isKnown ? value : value ? 'Otro' : '';
+  const [showOther, setShowOther] = useState(Boolean(value && !isKnown));
+  const selected = isKnown ? value : (value || showOther) ? 'Otro' : '';
   return <div className="sb-location-field">
     <label htmlFor="business-category-select">Actividad o sector</label>
     <select id="business-category-select" value={selected} disabled={disabled} onChange={event => {
       const next = event.target.value;
-      if (next === 'Otro') { onChange(other || ''); }
-      else onChange(next);
+      if (next === 'Otro') { setShowOther(true); onChange(other); }
+      else { setShowOther(false); setOther(''); onChange(next); }
     }}>
       <option value="">Selecciona una actividad</option>
       {BUSINESS_CATEGORIES.map(item => <option key={item} value={item}>{item === 'Otro' ? 'Otro (especificar)' : item}</option>)}
