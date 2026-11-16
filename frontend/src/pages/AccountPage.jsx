@@ -100,10 +100,8 @@ export default function AccountPage() {
         <form className="account-form account-business-form" onSubmit={saveBusiness}>
           <label>Nombre del negocio<input name="name" value={businessForm.name} onChange={changeBusiness} required minLength={2} maxLength={120} placeholder="Ej. Café Aurora" disabled={business.ownerId !== user?.id}/></label>
           <BusinessCategoryField value={businessForm.category} disabled={business.ownerId !== user?.id} onChange={value=>setBusinessForm(current=>({...current,category:value}))}/>
-          <div className="account-business-row">
-            <label>Teléfono<input name="phone" type="tel" inputMode="tel" pattern="[0-9+() .-]{7,20}" title="Introduce un teléfono válido usando números." value={businessForm.phone} onChange={changeBusiness} maxLength={20} placeholder="Número de contacto" disabled={business.ownerId !== user?.id}/></label>
-            <BusinessLocationField value={businessForm.city} disabled={business.ownerId !== user?.id} onChange={value=>setBusinessForm(current=>({...current,city:value}))}/>
-          </div>
+          <label>Teléfono<input name="phone" type="tel" inputMode="tel" pattern="[0-9+() .-]{7,20}" title="Introduce un teléfono válido usando números." value={businessForm.phone} onChange={changeBusiness} maxLength={20} placeholder="Número de contacto" disabled={business.ownerId !== user?.id}/></label>
+          <BusinessLocationField value={businessForm.city} disabled={business.ownerId !== user?.id} onChange={value=>setBusinessForm(current=>({...current,city:value}))}/>
           <label>NIT o documento (opcional)<input name="taxId" value={businessForm.taxId} onChange={changeBusiness} maxLength={40} placeholder="Los números y guiones están permitidos" disabled={business.ownerId !== user?.id}/></label>
           {business.ownerId === user?.id ? <div className="account-actions"><button className="sb-primary" disabled={businessBusy}>{businessBusy ? 'Guardando cambios…' : 'Guardar cambios'}</button></div> : <small className="account-business-readonly">Solo la persona propietaria del negocio puede modificar esta información.</small>}
         </form>
