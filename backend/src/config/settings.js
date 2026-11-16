@@ -17,6 +17,8 @@ export const settings = {
   cookieName: process.env.SESSION_COOKIE_NAME || 'sirius_session',
   sessionDurationDays: Number(process.env.SESSION_DURATION_DAYS || 7),
   cookieSameSite: sameSite,
+  formmySecretKey: process.env.FORMMY_SECRET_KEY || '',
+  formmyAgentId: process.env.FORMMY_AGENT_ID || '',
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),

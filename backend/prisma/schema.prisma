@@ -21,6 +21,7 @@ model User {
   ownedBusiness Business? @relation("BusinessOwner")
   memberships BusinessMember[]
   tutorialProgress TutorialProgress[]
+  assistantConversations AssistantConversation[]
   @@index([createdAt])
 }
 model Session {
@@ -79,6 +80,7 @@ model Business {
   integrations Integration[]
   store StoreSettings?
   tutorialProgress TutorialProgress[]
+  assistantConversations AssistantConversation[]
   @@index([createdAt])
 }
 model BusinessMember {
@@ -238,4 +240,29 @@ model TutorialProgress {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([businessId, userId])
+}
+
+
+model AssistantConversation {
+  id String @id @default(uuid()) @db.Uuid
+  businessId String @db.Uuid
+  userId String @db.Uuid
+  providerConversationId String? @db.VarChar(160)
+  title String @db.VarChar(120)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AssistantMessage[]
+  @@index([businessId, userId, updatedAt])
+}
+
+model AssistantMessage {
+  id String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  role String @db.VarChar(20)
+  content String @db.Text
+  createdAt DateTime @default(now())
+  conversation AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  @@index([conversationId, createdAt])
 }

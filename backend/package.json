@@ -10,7 +10,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -21,7 +22,8 @@
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "nodemailer": "^7.0.10",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@formmy.app/chat": "^0.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
