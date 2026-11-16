@@ -48,22 +48,24 @@ export function BusinessLocationField({ value, onChange, disabled = false }) {
 
   useEffect(() => {
     if (!value) return;
-    const [oldCity, ...rest] = value.split(' - ');
-    const oldDepartment = rest.join(' - ').trim();
-    const cityName = oldCity.trim().toLocaleLowerCase('es-CO');
+    const normalizedValue = value.trim().toLocaleLowerCase('es-CO');
+    const matchedDepartment = departments.find(item =>
+      normalizedValue.endsWith(' - ' + item.name.toLocaleLowerCase('es-CO'))
+    );
+    const oldCity = matchedDepartment
+      ? value.trim().slice(0, -(matchedDepartment.name.length + 3)).trim()
+      : value.trim();
+    const cityName = oldCity.toLocaleLowerCase('es-CO');
     const candidates = MUNICIPALITIES.filter(item =>
       item.name.toLocaleLowerCase('es-CO') === cityName &&
-      (!oldDepartment || item.department.toLocaleLowerCase('es-CO') === oldDepartment.toLocaleLowerCase('es-CO'))
+      (!matchedDepartment || item.departmentCode === matchedDepartment.code)
     );
     if (candidates.length === 1) {
       setDepartmentCode(candidates[0].departmentCode);
       setCityCode(candidates[0].code);
-    } else if (oldDepartment) {
-      const department = departments.find(item => item.name.toLocaleLowerCase('es-CO') === oldDepartment.toLocaleLowerCase('es-CO'));
-      if (department) {
-        setDepartmentCode(department.code);
-        setCityCode('');
-      }
+    } else if (matchedDepartment) {
+      setDepartmentCode(matchedDepartment.code);
+      setCityCode('');
     }
   }, [value, departments]);
 
