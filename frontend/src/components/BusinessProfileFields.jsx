@@ -47,6 +47,7 @@ export function BusinessLocationField({ value, onChange, disabled = false }) {
   const [loadFailed, setLoadFailed] = useState(false);
   const [department, setDepartment] = useState('');
   const [city, setCity] = useState('');
+  const [citySearch, setCitySearch] = useState('');
   const [manual, setManual] = useState('');
 
   useEffect(() => {
@@ -68,10 +69,11 @@ export function BusinessLocationField({ value, onChange, disabled = false }) {
   }, []);
 
   const departments = useMemo(() => [...new Set([...DEPARTMENT_FALLBACK, ...locations.map(row => row.department)])].sort((a,b)=>a.localeCompare(b,'es')), [locations]);
-  const cities = useMemo(() => locations.filter(row => row.department === department).map(row => row.city).sort((a,b)=>a.localeCompare(b,'es')), [locations, department]);
+  const cities = useMemo(() => locations.filter(row => row.department === department).map(row => row.city).filter((name,index,all)=>all.indexOf(name)===index).sort((a,b)=>a.localeCompare(b,'es')), [locations, department]);
+  const visibleCities = useMemo(() => cities.filter(name => name.toLocaleLowerCase('es-CO').includes(citySearch.trim().toLocaleLowerCase('es-CO'))), [cities, citySearch]);
 
   function updateLocation(nextDepartment, nextCity) {
-    setDepartment(nextDepartment); setCity(nextCity); setManual('');
+    setDepartment(nextDepartment); setCity(nextCity); setCitySearch(''); setManual('');
     onChange(nextCity && nextDepartment ? nextCity + ' - ' + nextDepartment : '');
   }
 
@@ -81,10 +83,12 @@ export function BusinessLocationField({ value, onChange, disabled = false }) {
       <option value="">Selecciona un departamento</option>
       {departments.map(item => <option key={item} value={item}>{item}</option>)}
     </select>
+    <label htmlFor="business-city-search">Buscar municipio</label>
+    <input id="business-city-search" value={citySearch} disabled={!department || disabled || loading} onChange={event=>setCitySearch(event.target.value)} placeholder="Escribe para filtrar municipios…" />
     <label htmlFor="business-city">Municipio o ciudad</label>
     <select id="business-city" value={city} disabled={disabled || !department || loading || cities.length === 0} onChange={event => updateLocation(department, event.target.value)}>
       <option value="">{loading ? 'Cargando municipios…' : !department ? 'Primero selecciona un departamento' : 'Selecciona un municipio'}</option>
-      {cities.map(item => <option key={item} value={item}>{item}</option>)}
+      {visibleCities.map(item => <option key={item} value={item}>{item}</option>)}
     </select>
     {loadFailed && <p className="sb-location-note">No pudimos cargar el listado oficial. Puedes escribir tu ciudad manualmente.</p>}
     {(loadFailed || manual) && <input aria-label="Ciudad y departamento" value={manual} disabled={disabled} maxLength={100} placeholder="Ej. Montería - Córdoba" onChange={event => { setManual(event.target.value); onChange(event.target.value); }} />}
