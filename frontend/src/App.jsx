@@ -9,11 +9,9 @@ import SetupPage from './pages/SetupPage.jsx';
 import WorkspacePage from './pages/WorkspacePage.jsx';
 import PlansPage from './pages/PlansPage.jsx';
 import AccountPage from './pages/AccountPage.jsx';
-import { SiriusAIProvider } from './components/SiriusAI.jsx';
 import './styles.css';
 import './space.css';
 import './account.css';
-import './sirius-ai.css';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -38,7 +36,6 @@ function PublicOnlyRoute({ children }) {
 
 function AppRoutes() {
   return (
-    <SiriusAIProvider>
     <>
     <Routes>
       <Route path="/" element={<ProtectedRoute><WorkspacePage /></ProtectedRoute>} />
@@ -53,7 +50,6 @@ function AppRoutes() {
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </>
-    </SiriusAIProvider>
   );
 }
 
