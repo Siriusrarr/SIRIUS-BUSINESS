@@ -157,3 +157,14 @@
 .sai-chat-page .sai-chat-messages {
   padding-inline: clamp(12px, 3vw, 32px);
 }
+
+.sai-history-toggle,.sai-history button {
+  color: #e2ddff; background: #20283e; border: 1px solid #494363;
+  border-radius: 9px; padding: 7px 10px; font: inherit; cursor: pointer;
+}
+.sai-history-toggle { font-size: 12px; }
+.sai-history { flex: 1; min-height: 0; padding: 16px; overflow-y: auto; color: #dce3f4; }
+.sai-history h3 { margin: 0 0 12px; }
+.sai-history > button { width: 100%; display: grid; gap: 4px; text-align: start; margin-bottom: 6px; overflow-wrap: anywhere; }
+.sai-history button[aria-current],.sai-history button:hover { border-color: #a192ec; }
+.sai-history small { color: #bac2d6; }

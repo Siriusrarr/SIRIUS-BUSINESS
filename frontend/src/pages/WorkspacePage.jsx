@@ -7,7 +7,8 @@ const GUIDES={
 'sirius-ai': [
   {target:'.sai-chat-page .sai-chat-messages',title:'Tu conversación con Sirius',body:'Aquí aparecen tus preguntas y las respuestas sobre tu negocio. Puedes continuar la conversación que abriste en el chat flotante.'},
   {target:'.sai-chat-page .sai-composer',title:'Haz una consulta',body:'Escribe tu pregunta y pulsa Enviar. Usa Mayús + Enter para añadir una línea.'},
-  {target:'.sai-chat-page .sai-reset',title:'Empieza de nuevo',body:'Este botón borra la conversación actual y abre una nueva.'}
+  {target:'.sai-chat-page .sai-history-toggle',title:'Recupera tus consultas',body:'Abre Historial y elige una conversación para leerla o continuar preguntando.'},
+  {target:'.sai-chat-page .sai-reset',title:'Empieza de nuevo',body:'Empieza otra conversación. Puedes recuperar la anterior desde Historial.'}
 ],
 dashboard:[...NAV.map(group => ({
   target: '[data-guide-menu="' + group.group + '"]',

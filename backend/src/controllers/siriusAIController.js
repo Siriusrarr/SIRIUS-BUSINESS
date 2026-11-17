@@ -98,6 +98,28 @@ async function getBusinessSnapshot(businessId) {
   };
 }
 
+const scope = req => ({ userId: req.user.id, businessId: req.business.id });
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const missing = () => new HttpError(404, 'Conversación no encontrada.', 'CHAT_NOT_FOUND');
+const summary = { id: true, title: true, updatedAt: true };
+
+export async function listConversations(req, res) {
+  const conversations = await prisma.siriusThread.findMany({
+    where: scope(req), select: summary, orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+  });
+  res.json({ conversations });
+}
+
+export async function getConversation(req, res) {
+  if (!uuid.test(req.params.id)) throw missing();
+  const thread = await prisma.siriusThread.findFirst({
+    where: { id: req.params.id, ...scope(req) },
+    select: { ...summary, turns: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], select: { question: true, answer: true } } },
+  });
+  if (!thread) throw missing();
+  res.json({ conversation: thread });
+}
+
 export async function chatWithSirius(req, res) {
   const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) throw new HttpError(503, 'Sirius AI aún no está configurado. Falta GROQ_API_KEY en el servidor.', 'AI_NOT_CONFIGURED');
@@ -107,6 +129,33 @@ export async function chatWithSirius(req, res) {
     throw new HttpError(400, 'Escribe una consulta de hasta 2.000 caracteres.', 'INVALID_AI_MESSAGE');
   }
 
+  const { conversationId, requestId } = req.body;
+  if ((conversationId != null && !uuid.test(conversationId)) || (requestId != null && !uuid.test(requestId))) {
+    throw new HttpError(400, 'Identificador de conversación inválido.', 'INVALID_CHAT_ID');
+  }
+  async function savedReply() {
+    if (!requestId) return null;
+    const turn = await prisma.siriusTurn.findFirst({
+      where: { id: requestId, thread: scope(req) },
+      select: { answer: true, question: true, thread: { select: summary } },
+    });
+    if (!turn) return null;
+    if (turn.question !== message || (conversationId && conversationId !== turn.thread.id)) {
+      throw new HttpError(409, 'Esta solicitud ya se usó para otra consulta.', 'CHAT_CONFLICT');
+    }
+    return { answer: turn.answer, conversation: turn.thread };
+  }
+  const cached = await savedReply();
+  if (cached) return res.json(cached);
+  let turns;
+  if (conversationId) {
+    const thread = await prisma.siriusThread.findFirst({
+      where: { id: conversationId, ...scope(req) },
+      select: { turns: { take: 5, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { question: true, answer: true } } },
+    });
+    if (!thread) throw missing();
+    turns = thread.turns.reverse();
+  }
   const snapshot = await getBusinessSnapshot(req.business.id);
   snapshot.business = {
     name: req.business.name,
@@ -115,7 +164,9 @@ export async function chatWithSirius(req, res) {
     currency: req.business.currency || 'COP',
   };
 
-  const history = Array.isArray(req.body?.history)
+  const history = turns ? turns.flatMap(turn => [
+    { role: 'user', content: turn.question }, { role: 'assistant', content: turn.answer },
+  ]) : Array.isArray(req.body?.history)
     ? req.body.history.slice(-10).filter(item =>
       item && ['user', 'assistant'].includes(item.role) &&
       typeof item.content === 'string' && item.content.trim() &&
@@ -187,5 +238,22 @@ export async function chatWithSirius(req, res) {
   if (typeof answer !== 'string' || !answer.trim()) {
     throw new HttpError(502, 'Sirius recibió una respuesta vacía del servicio. Inténtalo de nuevo.', 'AI_EMPTY_RESPONSE');
   }
-  res.json({ answer: answer.trim(), model: result.model || MODEL });
+  const turn = { id: requestId ?? undefined, question: message, answer: answer.trim() };
+  try {
+    const conversation = conversationId
+      ? await prisma.siriusThread.update({
+          where: { id: conversationId, ...scope(req) },
+          data: { updatedAt: new Date(), turns: { create: turn } }, select: summary,
+        })
+      : await prisma.siriusThread.create({
+          data: { ...scope(req), title: Array.from(message).slice(0, 120).join(''), turns: { create: turn } }, select: summary,
+        });
+    res.json({ answer: turn.answer, model: result.model || MODEL, conversation });
+  } catch (err) {
+    if (err.code === 'P2002') {
+      const existing = await savedReply();
+      if (existing) return res.json(existing);
+    }
+    throw err;
+  }
 }

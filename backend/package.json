@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "prestart": "prisma db execute --schema prisma/schema.prisma --file prisma/sirius-history.sql",
     "start": "node src/server.js",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",

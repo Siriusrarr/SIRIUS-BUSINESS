@@ -20,6 +20,7 @@ model User {
   passwordTokens PasswordResetToken[]
   ownedBusiness Business? @relation("BusinessOwner")
   memberships BusinessMember[]
+  siriusThreads SiriusThread[]
   tutorialProgress TutorialProgress[]
   @@index([createdAt])
 }
@@ -78,6 +79,7 @@ model Business {
   promotions Promotion[]
   integrations Integration[]
   store StoreSettings?
+  siriusThreads SiriusThread[]
   tutorialProgress TutorialProgress[]
   @@index([createdAt])
 }
@@ -238,4 +240,26 @@ model TutorialProgress {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([businessId, userId])
+}
+
+model SiriusThread {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  businessId String @db.Uuid
+  title String @db.VarChar(120)
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  turns SiriusTurn[]
+  @@index([userId, businessId, updatedAt])
+}
+
+model SiriusTurn {
+  id String @id @default(uuid()) @db.Uuid
+  threadId String @db.Uuid
+  question String
+  answer String
+  createdAt DateTime @default(now())
+  thread SiriusThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  @@index([threadId, createdAt])
 }

@@ -90,6 +90,12 @@ export function SiriusChat({ expanded }) {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [conversationId, setConversationId] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState('');
+  const retry = useRef(null);
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -118,20 +124,60 @@ export function SiriusChat({ expanded }) {
     }
   }, [messages, open, sending, expanded]);
 
+  async function showHistory() {
+    setHistoryOpen(true);
+    setLoadingHistory(true);
+    setHistoryError('');
+    try {
+      const result = await businessApi.listConversations();
+      setConversations(result.conversations);
+    } catch (err) {
+      setHistoryError(err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
+  async function selectConversation(id) {
+    setLoadingHistory(true);
+    setHistoryError('');
+    try {
+      const { conversation } = await businessApi.getConversation(id);
+      setMessages([welcome, ...conversation.turns.flatMap(turn => [
+        { role: 'user', content: turn.question },
+        { role: 'assistant', content: turn.answer },
+      ])]);
+      setConversationId(id);
+      setDraft('');
+      setError('');
+      retry.current = null;
+      setHistoryOpen(false);
+    } catch (err) {
+      setHistoryError(err.message);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
   async function send(value = draft) {
     const text = value.trim();
-    if (!text || sending) return;
+    if (!text || sending || loadingHistory) return;
+    const requestId = retry.current?.text === text ? retry.current.id : crypto.randomUUID();
+    retry.current = { text, id: requestId };
     const previous = messages;
-    const next = [...previous, { role: 'user', content: text }];
-    setMessages(next);
+    setMessages([...previous, { role: 'user', content: text }]);
+    setHistoryOpen(false);
     setDraft('');
     setError('');
     setSending(true);
     try {
-      const history = previous.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10);
-      const result = await businessApi.chatWithSirius(text, history);
+      const result = await businessApi.chatWithSirius(text, conversationId, requestId);
+      setConversationId(result.conversation.id);
       setMessages(current => [...current, { role: 'assistant', content: result.answer }]);
+      retry.current = null;
     } catch (err) {
+      setMessages(previous);
+      setDraft(text);
       setError(err.message || 'No se pudo conectar con Sirius. Inténtalo de nuevo.');
     } finally {
       setSending(false);
@@ -140,9 +186,13 @@ export function SiriusChat({ expanded }) {
   }
 
   function resetChat() {
-    if (sending) return;
+    if (sending || loadingHistory) return;
+    setConversationId(null);
+    setHistoryOpen(false);
     setMessages([welcome]);
+    setDraft('');
     setError('');
+    retry.current = null;
   }
 
   return <>
@@ -150,9 +200,21 @@ export function SiriusChat({ expanded }) {
       <header className="sai-float-head">
         <div className="sai-avatar"><span>✦</span></div>
         <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> Copiloto empresarial <span>· Groq</span></small></div>
-        <button className="sai-reset" type="button" onClick={resetChat} disabled={sending} aria-label="Nueva conversación" title="Nueva conversación">↻</button>
+        <button type="button" className="sai-history-toggle" disabled={sending || loadingHistory} aria-expanded={historyOpen}
+          onClick={() => historyOpen ? setHistoryOpen(false) : showHistory()}>Historial</button>
+        <button className="sai-reset" type="button" onClick={resetChat} disabled={sending || loadingHistory} aria-label="Nueva conversación" title="Nueva conversación">↻</button>
         {!expanded && <button className="sai-close" type="button" onClick={() => setOpen(false)} aria-label="Cerrar ventana">×</button>}
       </header>
+      {historyOpen ? <section className="sai-history" aria-label="Conversaciones guardadas">
+        <h3>Conversaciones</h3>
+        {loadingHistory && <p role="status">Cargando…</p>}
+        {historyError && <p role="alert">{historyError} <button onClick={showHistory}>Reintentar</button></p>}
+        {!loadingHistory && !historyError && !conversations.length && <p>Tus consultas aparecerán aquí cuando Sirius responda.</p>}
+        {conversations.map(item => <button type="button" key={item.id} disabled={loadingHistory}
+          aria-current={item.id === conversationId ? 'true' : undefined} onClick={() => selectConversation(item.id)}>
+          <strong>{item.title}</strong><small>{new Date(item.updatedAt).toLocaleString('es-CO')}</small>
+        </button>)}
+      </section> : <>
       <div className="sai-chat-meta"><span>CONVERSACIÓN PRIVADA</span><span>DATOS DE TU NEGOCIO</span></div>
       <div className="sai-chat-messages" aria-live="polite">
         {messages.map((message, index) => <article className={'sai-message sai-message-' + message.role} key={index}>
@@ -160,7 +222,7 @@ export function SiriusChat({ expanded }) {
           <div className="sai-message-bubble">{message.role === 'assistant' ? <AssistantReply text={message.content}/> : message.content}</div>
         </article>)}
         {sending && <article className="sai-message sai-message-assistant"><span className="sai-message-avatar">✦</span><div className="sai-message-bubble sai-typing"><i/><i/><i/><span>Sirius está pensando</span></div></article>}
-        {error && <div className="sai-chat-error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => send(messages[messages.length - 1]?.content || '')}>Reintentar</button></div>}
+        {error && <div className="sai-chat-error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => send(draft)}>Reintentar</button></div>}
         <div ref={endRef}/>
       </div>
       {messages.length === 1 && <div className="sai-suggestions">{suggestions.map(item => <button type="button" key={item.label} onClick={() => send(item.prompt)} disabled={sending}><span>{item.icon}</span>{item.label}<b>↗</b></button>)}</div>}
@@ -168,6 +230,7 @@ export function SiriusChat({ expanded }) {
         <textarea ref={inputRef} rows="1" value={draft} maxLength={2000} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Pregúntale algo a Sirius…" aria-label="Escribe tu consulta" disabled={sending}/>
         <button type="submit" disabled={sending || !draft.trim()} aria-label="Enviar mensaje"><span>➤</span></button>
       </form>
+      </>}
       <div className="sai-float-foot">SIRIUS BUSINESS <span>·</span> SOLO CONSULTA · IA CON GROQ</div>
     </section>}
     {!expanded && <button className={'sai-launcher' + (open ? ' is-open' : '')} type="button" onClick={() => setOpen(v => !v)} aria-label={open ? 'Cerrar Sirius AI' : 'Abrir Sirius AI'} aria-expanded={open}>
