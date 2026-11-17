@@ -60,11 +60,11 @@ function PlansModule({user}){const names={free:'Free',entrepreneur:'Emprendedor'
 function GuideOverlay({step,index,total,onNext,onSkip,onBack}){
  const [rect,setRect]=useState(null);
  useEffect(()=>{let timer;const locate=()=>{const el=document.querySelector(step.target);if(!el){setRect(null);return false;}const r=el.getBoundingClientRect();setRect({top:r.top,left:r.left,width:r.width,height:r.height});return true;};const first=document.querySelector(step.target);if(first)first.scrollIntoView({block:'center',behavior:'smooth'});timer=setInterval(()=>{if(locate())clearInterval(timer);},140);locate();window.addEventListener('resize',locate);window.addEventListener('scroll',locate,true);return()=>{clearInterval(timer);window.removeEventListener('resize',locate);window.removeEventListener('scroll',locate,true);};},[step]);
- const top=rect?Math.min(Math.max(18,rect.top+rect.height+14),Math.max(18,window.innerHeight-230)):null;
+ const top=rect?Math.max(18,Math.min(rect.top+rect.height+14,window.innerHeight/2)):null;
  const left=rect?Math.min(Math.max(18,rect.left),Math.max(18,window.innerWidth-390)):null;
  return <div className="sb-guide-layer" role="presentation">
   {rect&&<div className="sb-guide-spotlight" style={{top:rect.top-5,left:rect.left-5,width:rect.width+10,height:rect.height+10}}/>}
-  <section className="sb-guide-card" role="dialog" aria-modal="true" aria-labelledby="sb-guide-title" style={rect?{top,left}:undefined}>
+  <section className="sb-guide-card" role="dialog" aria-modal="true" aria-labelledby="sb-guide-title" style={rect?{top,left,maxHeight:`calc(100dvh - ${top + 18}px)`}:undefined}>
    <div className="sb-guide-top"><span>SIRIUS GUIDE · PASO {index+1} DE {total}</span><button type="button" onClick={onSkip} aria-label="Cerrar guía">Saltar guía ×</button></div>
    <div className="sb-guide-progress"><i style={{width:`${(index+1)/total*100}%`}}/></div>
    <span className="sb-guide-eyebrow">APRENDE A UTILIZAR ESTE MÓDULO</span><h2 id="sb-guide-title">{step.title}</h2><p>{step.body}</p>

@@ -92,3 +92,17 @@
 @media (prefers-reduced-motion: reduce) {
   .sb-app *, .sb-app *::before, .sb-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+/* Keep guide controls and dialog usable on narrow and short screens. */
+.sb-guide-trigger { max-width: 100%; min-height: 36px; text-align: center; justify-content: center; line-height: 1.35; }
+.sb-guide-card { overflow-y: auto; overscroll-behavior: contain; }
+.sb-topbar > div { min-width: 0; }
+@media (max-width: 650px) {
+  .sb-topbar { gap: 12px; align-items: flex-start; }
+  .sb-user { max-width: min(48%, 190px); min-width: 0; }
+  .sb-guide-trigger { white-space: normal; overflow-wrap: normal; }
+  .sb-guide-card { max-height: calc(100dvh - 36px) !important; }
+}
+@media (max-width: 360px) {
+  .sb-topbar { flex-wrap: wrap; }
+  .sb-user { max-width: 100%; align-items: flex-start; text-align: left; }
+}
