@@ -2,7 +2,9 @@ import { prisma } from '../config/prisma.js';
 import { HttpError } from '../utils/httpError.js';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+// Llama 3.3 70B fue retirado de Groq el 16/08/2026.
+// GPT-OSS 120B es el reemplazo recomendado y disponible actualmente.
+const MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 const money = value => Number(value || 0);
 
 function monthRange() {
@@ -97,7 +99,7 @@ async function getBusinessSnapshot(businessId) {
 }
 
 export async function chatWithSirius(req, res) {
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY?.trim();
   if (!apiKey) throw new HttpError(503, 'Sirius AI aún no está configurado. Falta GROQ_API_KEY en el servidor.', 'AI_NOT_CONFIGURED');
 
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
@@ -157,12 +159,28 @@ export async function chatWithSirius(req, res) {
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const providerMessage = result?.error?.message;
+    const providerMessage = result?.error?.message || 'Respuesta no detallada';
+    const providerCode = result?.error?.code || result?.error?.type || 'UNKNOWN';
+    // Registrar el diagnóstico del proveedor sin exponer la API key ni el contexto privado.
+    console.error('Groq API error:', {
+      status: response.status,
+      code: providerCode,
+      message: providerMessage,
+      model: MODEL,
+    });
     if (response.status === 429) {
       throw new HttpError(429, 'Groq alcanzó temporalmente su límite de solicitudes. Espera un momento e inténtalo de nuevo.', 'AI_RATE_LIMIT');
     }
-    console.error('Groq API error:', response.status, providerMessage || 'Respuesta no detallada');
-    throw new HttpError(502, 'El servicio de inteligencia no pudo completar la consulta. Revisa la configuración de Groq.', 'AI_PROVIDER_ERROR');
+    if (response.status === 401 || response.status === 403) {
+      throw new HttpError(503, 'Groq rechazó la clave API. Comprueba que GROQ_API_KEY esté bien copiada y activa en Render.', 'AI_INVALID_API_KEY');
+    }
+    if (response.status === 404) {
+      throw new HttpError(503, 'El modelo de Groq configurado ya no está disponible. Actualiza GROQ_MODEL en Render o elimina esa variable para usar el modelo vigente.', 'AI_MODEL_UNAVAILABLE');
+    }
+    if (response.status === 400 && /model/i.test(providerMessage)) {
+      throw new HttpError(503, 'Groq no reconoce el modelo configurado. Usa openai/gpt-oss-120b en GROQ_MODEL o elimina esa variable en Render.', 'AI_MODEL_UNAVAILABLE');
+    }
+    throw new HttpError(502, 'Groq rechazó la consulta. El servidor ya registró el código exacto para identificar la causa.', 'AI_PROVIDER_ERROR');
   }
 
   const answer = result?.choices?.[0]?.message?.content;
