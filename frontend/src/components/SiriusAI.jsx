@@ -201,20 +201,23 @@ export function SiriusChat({ expanded }) {
         <div className="sai-avatar"><span>✦</span></div>
         <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> Copiloto empresarial <span>· Groq</span></small></div>
         <button type="button" className="sai-history-toggle" disabled={sending || loadingHistory} aria-expanded={historyOpen}
-          onClick={() => historyOpen ? setHistoryOpen(false) : showHistory()}>Historial</button>
-        <button className="sai-reset" type="button" onClick={resetChat} disabled={sending || loadingHistory} aria-label="Nueva conversación" title="Nueva conversación">↻</button>
+          onClick={() => historyOpen ? setHistoryOpen(false) : showHistory()}><span aria-hidden="true">☰</span> Historial</button>
+        <button className="sai-reset" type="button" onClick={resetChat} disabled={sending || loadingHistory} aria-label="Nueva conversación" title="Nueva conversación">＋</button>
         {!expanded && <button className="sai-close" type="button" onClick={() => setOpen(false)} aria-label="Cerrar ventana">×</button>}
       </header>
-      {historyOpen ? <section className="sai-history" aria-label="Conversaciones guardadas">
+      <div className="sai-workbench">
+      {historyOpen && <section className="sai-history" aria-label="Conversaciones guardadas">
         <h3>Conversaciones</h3>
         {loadingHistory && <p role="status">Cargando…</p>}
         {historyError && <p role="alert">{historyError} <button onClick={showHistory}>Reintentar</button></p>}
         {!loadingHistory && !historyError && !conversations.length && <p>Tus consultas aparecerán aquí cuando Sirius responda.</p>}
-        {conversations.map(item => <button type="button" key={item.id} disabled={loadingHistory}
+        {conversations.map(item => <button type="button" key={item.id} disabled={loadingHistory || sending}
           aria-current={item.id === conversationId ? 'true' : undefined} onClick={() => selectConversation(item.id)}>
-          <strong>{item.title}</strong><small>{new Date(item.updatedAt).toLocaleString('es-CO')}</small>
+          <span className="sai-thread-mark" aria-hidden="true">✧</span>
+          <span><strong>{item.title}</strong><small>{new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(item.updatedAt))}</small></span>
         </button>)}
-      </section> : <>
+      </section>}
+      <div className="sai-conversation">
       <div className="sai-chat-meta"><span>CONVERSACIÓN PRIVADA</span><span>DATOS DE TU NEGOCIO</span></div>
       <div className="sai-chat-messages" aria-live="polite">
         {messages.map((message, index) => <article className={'sai-message sai-message-' + message.role} key={index}>
@@ -230,7 +233,8 @@ export function SiriusChat({ expanded }) {
         <textarea ref={inputRef} rows="1" value={draft} maxLength={2000} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder="Pregúntale algo a Sirius…" aria-label="Escribe tu consulta" disabled={sending}/>
         <button type="submit" disabled={sending || !draft.trim()} aria-label="Enviar mensaje"><span>➤</span></button>
       </form>
-      </>}
+      </div>
+      </div>
       <div className="sai-float-foot">SIRIUS BUSINESS <span>·</span> SOLO CONSULTA · IA CON GROQ</div>
     </section>}
     {!expanded && <button className={'sai-launcher' + (open ? ' is-open' : '')} type="button" onClick={() => setOpen(v => !v)} aria-label={open ? 'Cerrar Sirius AI' : 'Abrir Sirius AI'} aria-expanded={open}>
