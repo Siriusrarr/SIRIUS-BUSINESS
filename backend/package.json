@@ -22,8 +22,7 @@
     "express-rate-limit": "^8.1.0",
     "helmet": "^8.1.0",
     "nodemailer": "^7.0.10",
-    "zod": "^4.1.12",
-    "@formmy.app/chat": "^0.2.0"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
