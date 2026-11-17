@@ -12,6 +12,9 @@ import businessRoutes from './routes/businessRoutes.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
+// Render termina TLS en su proxy; confiar en el primer proxy evita
+// que express-rate-limit rechace X-Forwarded-For en producción.
+app.set('trust proxy', 1);
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
 const frontendDirectory = path.resolve(currentDirectory, '../../frontend/dist');
