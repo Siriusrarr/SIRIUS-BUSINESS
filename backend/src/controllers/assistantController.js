@@ -222,16 +222,28 @@ export async function sendAssistantMessage(req, res) {
     throw new HttpError(502, 'Formmy no pudo responder en este momento. Inténtalo de nuevo.', 'FORMMY_REQUEST_FAILED');
   }
 
-  // Formmy SDK 0.2.x expone el texto como "message" en algunas respuestas;
-  // otras versiones/transportes pueden usar "content" o "text".
-  const answerText = [
-    answer?.message,
-    answer?.content,
-    answer?.text,
-    answer?.response?.message,
-    answer?.response?.content,
-    answer?.response?.text,
-  ].find((value) => typeof value === 'string' && value.trim());
+  // El SDK puede devolver content como texto, arreglo de bloques o un objeto.
+  // Extraemos únicamente contenido textual y omitimos metadatos/tool calls.
+  function extractText(value, depth = 0) {
+    if (depth > 5 || value == null) return '';
+    if (typeof value === 'string') return value.trim();
+    if (Array.isArray(value)) {
+      return value.map((item) => extractText(item, depth + 1)).filter(Boolean).join('\n').trim();
+    }
+    if (typeof value !== 'object') return '';
+    if (typeof value.text === 'string' && value.text.trim()) return value.text.trim();
+    for (const key of ['content', 'message', 'output', 'parts', 'value']) {
+      const extracted = extractText(value[key], depth + 1);
+      if (extracted) return extracted;
+    }
+    return '';
+  }
+
+  const answerText = extractText(answer?.message)
+    || extractText(answer?.content)
+    || extractText(answer?.text)
+    || extractText(answer?.response)
+    || extractText(answer?.data);
 
   const providerConversationId = [
     answer?.conversationId,
