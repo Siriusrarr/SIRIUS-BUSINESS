@@ -2,12 +2,14 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate.js';
 import { requireBusiness } from '../middleware/requireBusiness.js';
 import * as c from '../controllers/businessController.js';
+import { chatWithSirius } from '../controllers/siriusAIController.js';
 
 const router=Router();
 router.use(authenticate);
 router.get('/business',c.getBusiness);
 router.post('/business',c.createBusiness);
 router.use(requireBusiness);
+router.post('/sirius-ai/chat', chatWithSirius);
 router.patch('/business',c.updateBusiness);
 router.get('/dashboard',c.dashboard);
 router.get('/finance',c.getFinance);
