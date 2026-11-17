@@ -133,3 +133,27 @@
 @keyframes sai-launcher-star{0%,100%{transform:rotate(0) scale(1)}50%{transform:rotate(12deg) scale(1.08)}}
 @media(max-width:620px){.sai-float-panel{right:15px;bottom:82px;height:min(650px,calc(100dvh - 105px));max-height:calc(100dvh - 105px)}.sai-suggestions{grid-template-columns:1fr 1fr}.sai-chat-meta{font-size:7px}.sai-hero{min-height:430px}}
 @media(prefers-reduced-motion:reduce){.sai-avatar:after,.sai-typing i,.sai-launcher-orbit{animation:none!important}}
+
+.sai-float-panel.sai-chat-page {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: clamp(30rem, 74dvh, 60rem);
+  max-height: none;
+  animation: none;
+  box-shadow: none;
+}
+.sai-chat-page .sai-chat-messages,
+.sai-chat-page .sai-suggestions,
+.sai-chat-page .sai-composer {
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+.sai-chat-page .sai-chat-messages {
+  padding-inline: clamp(12px, 3vw, 32px);
+}
