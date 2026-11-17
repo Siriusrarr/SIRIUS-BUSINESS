@@ -2,18 +2,12 @@ import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate.js';
 import { requireBusiness } from '../middleware/requireBusiness.js';
 import * as c from '../controllers/businessController.js';
-import * as ai from '../controllers/assistantController.js';
 
 const router=Router();
 router.use(authenticate);
 router.get('/business',c.getBusiness);
 router.post('/business',c.createBusiness);
 router.use(requireBusiness);
-router.get('/assistant/status',ai.getAssistantStatus);
-router.get('/assistant/conversations',ai.listAssistantConversations);
-router.get('/assistant/conversations/:id',ai.getAssistantConversation);
-router.delete('/assistant/conversations/:id',ai.deleteAssistantConversation);
-router.post('/assistant/chat',ai.assistantChatLimiter,ai.sendAssistantMessage);
 router.patch('/business',c.updateBusiness);
 router.get('/dashboard',c.dashboard);
 router.get('/finance',c.getFinance);
