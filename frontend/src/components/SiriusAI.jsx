@@ -80,10 +80,10 @@ export function SiriusAIPage() {
           <h2>¿Qué quieres resolver hoy?</h2>
           <p>Este espacio está reservado para las herramientas inteligentes de tu negocio.</p>
           <div className="sirius-ai-prompts">
-            {PROMPTS.map(item=><div className="sirius-ai-prompt-card" key={item.id}>
+            {PROMPTS.map(item=><div className="sirius-ai-prompt-static" key={item.id}>
               <span className={'sirius-ai-prompt-icon sirius-ai-prompt-'+item.id}><Glyph name={item.icon} size={19}/></span>
               <span><strong>{item.title}</strong><small>{item.description}</small></span>
-              <span className="sirius-ai-prompt-arrow">→</span>
+              <Glyph name="ai" size={15}/>
             </div>)}
           </div>
         </div>
