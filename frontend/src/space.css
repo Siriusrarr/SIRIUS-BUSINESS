@@ -64,3 +64,31 @@
 }
 
 .sb-guide-card{max-height:calc(100vh - 36px);overflow:auto}
+/* Refined workspace surfaces */
+.sb-app { color: #f2f1ff; background: radial-gradient(ellipse at 75% -20%, #352955 0%, transparent 42%), #090e1c; }
+.sb-sidebar { background: #101426; border-right: 1px solid #30364d; padding: 28px 16px; gap: 23px; }
+.sb-business { border-radius: 14px; padding: 16px; background: linear-gradient(135deg, #222741, #171c30); }
+.sb-nav-group button { min-height: 42px; border-radius: 10px; font-size: 13px; color: #c8cde1; transition: background .18s ease, color .18s ease, border-color .18s ease; }
+.sb-nav-group button.active { background: #51458a55; border-color: #a28afc70; color: #fff; }
+.sb-main { width: 100%; min-width: 0; padding: clamp(20px, 3vw, 40px); }
+.sb-topbar h1 { font-size: clamp(25px, 2.5vw, 32px); }
+.space-dashboard .space-hero { border-radius: 20px; padding: clamp(24px, 3vw, 42px); background: radial-gradient(ellipse at 80% 40%, #5e4a91a6, transparent 50%), linear-gradient(120deg, #202841, #171c31); }
+.space-dashboard .space-hero h2 { font-size: clamp(25px, 3vw, 39px); }
+.space-dashboard .sb-stat, .space-dashboard .sb-panel, [data-guide="products-form"], [data-guide="products-list"] { border-color: #39405a; background: linear-gradient(145deg, #1b2237, #121a2b); border-radius: 16px; box-shadow: 0 12px 28px #03071222; }
+.space-dashboard .sb-stat { min-width: 0; transition: transform .2s ease, border-color .2s ease; }
+.space-dashboard .sb-stat:hover { transform: translateY(-3px); border-color: #8071b3; }
+[data-guide="products-form"], [data-guide="products-list"] { padding: clamp(20px, 3vw, 30px); }
+[data-guide="products-form"] .sb-data-form { gap: 18px; }
+[data-guide="products-form"] label { font-size: 13px; color: #d0d6e8; }
+[data-guide="products-form"] input, [data-guide="products-form"] select { box-sizing: border-box; min-height: 46px; border-radius: 10px; background: #10182a; transition: border-color .2s ease, box-shadow .2s ease; }
+[data-guide="products-form"] input:focus, [data-guide="products-form"] select:focus { border-color: #ad9aff; box-shadow: 0 0 0 3px #a28bfa28; }
+@media (max-width: 650px) {
+  .sb-sidebar { height: auto; position: relative; padding: 12px; }
+  .sb-main { padding: 20px 16px; }
+  .space-dashboard .space-hero { min-height: 0; }
+  .space-dashboard .space-planet-scene { opacity: .25; pointer-events: none; }
+  .space-dashboard .hero-actions { flex-wrap: wrap; gap: 10px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-app *, .sb-app *::before, .sb-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
