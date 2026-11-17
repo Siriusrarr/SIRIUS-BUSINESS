@@ -84,7 +84,44 @@ function AssistantReply({ text }) {
   </div>;
 }
 
-export function SiriusChat({ expanded }) {
+function ImageStudio({ visible }) {
+  const [prompt, setPrompt] = useState('');
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  async function generate(event) {
+    event.preventDefault();
+    if (busy || !prompt.trim()) return;
+    setBusy(true);
+    setError('');
+    try {
+      const image = await businessApi.generateImage(prompt.trim());
+      setResult({ src: 'data:' + image.mimeType + ';base64,' + image.data, alt: prompt.trim(), extension: image.mimeType.split('/')[1] });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!visible) return null;
+  return <div className="sai-studio">
+    <form onSubmit={generate}>
+      <h2>Crear una imagen</h2>
+      <label htmlFor="sai-image-prompt">Descripción</label>
+      <textarea id="sai-image-prompt" value={prompt} onChange={e => setPrompt(e.target.value)} maxLength={2000} rows={5}
+        placeholder="Ej. Fotografía de un jugo de mango sobre una mesa de madera, con luz natural y fondo tropical."/>
+      <button className="sb-primary" disabled={busy || !prompt.trim()}>{busy ? 'Generando…' : 'Generar imagen'}</button>
+      {busy && <p role="status">Gemini está creando tu imagen…</p>}
+      {error && <p role="alert">{error}</p>}
+    </form>
+    {result && <figure><img src={result.src} alt={result.alt}/><figcaption><a href={result.src} download={'sirius-imagen.' + result.extension}>Descargar imagen</a></figcaption></figure>}
+  </div>;
+}
+
+export function SiriusChat({ expanded, guiding }) {
+  const [mode, setMode] = useState('chat');
+  useEffect(() => { if (guiding) setMode('chat'); }, [guiding]);
+  const imageMode = expanded && mode === 'image';
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([welcome]);
   const [draft, setDraft] = useState('');
@@ -199,12 +236,20 @@ export function SiriusChat({ expanded }) {
     {(expanded || open) && <section className={expanded ? "sai-float-panel sai-chat-page" : "sai-float-panel"} role={expanded ? "region" : "dialog"} aria-label="Conversación con Sirius AI" aria-modal={expanded ? undefined : false}>
       <header className="sai-float-head">
         <div className="sai-avatar"><span>✦</span></div>
-        <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> Copiloto empresarial <span>· Groq</span></small></div>
+        <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> {imageMode ? 'Estudio de imágenes · Gemini' : 'Copiloto empresarial · Groq'}</small></div>
+        {!imageMode && <>
         <button type="button" className="sai-history-toggle" disabled={sending || loadingHistory} aria-expanded={historyOpen}
           onClick={() => historyOpen ? setHistoryOpen(false) : showHistory()}><span aria-hidden="true">☰</span> Historial</button>
         <button className="sai-reset" type="button" onClick={resetChat} disabled={sending || loadingHistory} aria-label="Nueva conversación" title="Nueva conversación">＋</button>
+        </>}
         {!expanded && <button className="sai-close" type="button" onClick={() => setOpen(false)} aria-label="Cerrar ventana">×</button>}
       </header>
+      {expanded && <div className="sai-mode" role="group" aria-label="Modo de Sirius AI">
+        <button type="button" aria-pressed={!imageMode} onClick={() => setMode('chat')}>Consultas</button>
+        <button type="button" aria-pressed={imageMode} onClick={() => setMode('image')}>Imágenes</button>
+      </div>}
+      <ImageStudio visible={imageMode}/>
+      {!imageMode && <>
       <div className="sai-workbench">
       {historyOpen && <section className="sai-history" aria-label="Conversaciones guardadas">
         <h3>Conversaciones</h3>
@@ -236,6 +281,7 @@ export function SiriusChat({ expanded }) {
       </div>
       </div>
       <div className="sai-float-foot">SIRIUS BUSINESS <span>·</span> SOLO CONSULTA · IA CON GROQ</div>
+      </>}
     </section>}
     {!expanded && <button className={'sai-launcher' + (open ? ' is-open' : '')} type="button" onClick={() => setOpen(v => !v)} aria-label={open ? 'Cerrar Sirius AI' : 'Abrir Sirius AI'} aria-expanded={open}>
       <span className="sai-launcher-orbit">✦</span><span className="sai-launcher-pulse"/>

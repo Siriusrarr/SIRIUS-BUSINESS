@@ -197,3 +197,14 @@
   .sai-float-head { gap: 6px; padding-inline: 9px; }
   .sai-float-head small span, .sai-history-toggle span { display: none; }
 }
+.sai-mode { display:flex; gap:4px; padding:8px 16px; border-bottom:1px solid #353b50; }
+.sai-mode button { background:transparent; color:#bbc5db; padding:8px 16px; border:0; border-radius:8px; font:inherit; cursor:pointer; }
+.sai-mode button[aria-pressed=true] { background:#37324f; color:#f0eaff; }
+.sai-studio { flex:1; min-height:0; overflow:auto; padding:clamp(16px,4%,46px); }
+.sai-studio form,.sai-studio figure { width:min(100%,46rem); margin:0 auto 20px; }
+.sai-studio form { display:grid; gap:12px; justify-items:start; }
+.sai-studio h2 { margin:0 0 6px; }
+.sai-studio textarea { width:100%; box-sizing:border-box; resize:vertical; background:#111828; color:#eef1ff; border:1px solid #4a5068; border-radius:12px; padding:14px; font:inherit; }
+.sai-studio img { display:block; max-width:100%; max-height:65vh; border-radius:12px; }
+.sai-studio figcaption { margin-top:10px; }
+.sai-studio a { color:#c9baff; }

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/authenticate.js';
 import { requireBusiness } from '../middleware/requireBusiness.js';
+import { createSiriusImage } from '../controllers/siriusImageController.js';
 import * as c from '../controllers/businessController.js';
 import { chatWithSirius, listConversations, getConversation } from '../controllers/siriusAIController.js';
 
@@ -9,6 +10,7 @@ router.use(authenticate);
 router.get('/business',c.getBusiness);
 router.post('/business',c.createBusiness);
 router.use(requireBusiness);
+router.post('/sirius-ai/images', createSiriusImage);
 router.get('/sirius-ai/conversations', listConversations);
 router.get('/sirius-ai/conversations/:id', getConversation);
 router.post('/sirius-ai/chat', chatWithSirius);
