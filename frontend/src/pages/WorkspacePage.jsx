@@ -5,7 +5,7 @@ const NAV=[{group:'PRINCIPAL',items:[['dashboard','Panel de control']]},{group:'
 const TITLES={dashboard:'Panel de control',sales:'Ventas',products:'Inventario',finance:'Finanzas',customers:'Clientes',suppliers:'Proveedores',promotions:'Promociones',store:'Tienda virtual',integrations:'Integraciones',plans:'Suscripciones','sirius-ai':'Sirius AI'};
 const GUIDES={
 'sirius-ai': [
-  {target:'.sai-chat-page .sai-mode',title:'Elige cómo usar Sirius',body:'Usa Consultas para hablar con Groq sobre tu negocio. En Imágenes puedes describir una idea, generarla con Gemini y descargar el resultado.'},
+  {target:'.sai-chat-page .sai-mode',title:'Elige cómo usar Sirius',body:'Usa Consultas para hablar con Groq sobre tu negocio. En Imágenes puedes describir una idea, generarla con Cloudflare Workers AI y descargar el resultado.'},
   {target:'.sai-chat-page .sai-chat-messages',title:'Tu conversación con Sirius',body:'Aquí aparecen tus preguntas y las respuestas sobre tu negocio. Puedes continuar la conversación que abriste en el chat flotante.'},
   {target:'.sai-chat-page .sai-composer',title:'Haz una consulta',body:'Escribe tu pregunta y pulsa Enviar. Usa Mayús + Enter para añadir una línea.'},
   {target:'.sai-chat-page .sai-history-toggle',title:'Recupera tus consultas',body:'Abre Historial y elige una conversación para leerla o continuar preguntando.'},

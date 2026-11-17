@@ -111,7 +111,7 @@ function ImageStudio({ visible }) {
       <textarea id="sai-image-prompt" value={prompt} onChange={e => setPrompt(e.target.value)} maxLength={2000} rows={5}
         placeholder="Ej. Fotografía de un jugo de mango sobre una mesa de madera, con luz natural y fondo tropical."/>
       <button className="sb-primary" disabled={busy || !prompt.trim()}>{busy ? 'Generando…' : 'Generar imagen'}</button>
-      {busy && <p role="status">Gemini está creando tu imagen…</p>}
+      {busy && <p role="status">Cloudflare Workers AI está creando tu imagen…</p>}
       {error && <p role="alert">{error}</p>}
     </form>
     {result && <figure><img src={result.src} alt={result.alt}/><figcaption><a href={result.src} download={'sirius-imagen.' + result.extension}>Descargar imagen</a></figcaption></figure>}
@@ -236,7 +236,7 @@ export function SiriusChat({ expanded, guiding }) {
     {(expanded || open) && <section className={expanded ? "sai-float-panel sai-chat-page" : "sai-float-panel"} role={expanded ? "region" : "dialog"} aria-label="Conversación con Sirius AI" aria-modal={expanded ? undefined : false}>
       <header className="sai-float-head">
         <div className="sai-avatar"><span>✦</span></div>
-        <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> {imageMode ? 'Estudio de imágenes · Gemini' : 'Copiloto empresarial · Groq'}</small></div>
+        <div className="sai-head-copy"><strong>Sirius AI</strong><small><i/> {imageMode ? 'Estudio de imágenes · Cloudflare Workers AI' : 'Copiloto empresarial · Groq'}</small></div>
         {!imageMode && <>
         <button type="button" className="sai-history-toggle" disabled={sending || loadingHistory} aria-expanded={historyOpen}
           onClick={() => historyOpen ? setHistoryOpen(false) : showHistory()}><span aria-hidden="true">☰</span> Historial</button>
