@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './sirius-ai.css';
 
 const features = [
@@ -37,6 +37,7 @@ export function SiriusAIPage({ onOpenAssistant }) {
 
 export function SiriusAIFloating({ onOpenAI }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => { const show = () => setOpen(true); window.addEventListener('sirius-ai-open', show); return () => window.removeEventListener('sirius-ai-open', show); }, []);
   return <>
     {open && <section className="sai-float-panel" role="dialog" aria-label="Ventana de Sirius AI">
       <header className="sai-float-head"><div className="sai-avatar">✦</div><div><strong>Sirius AI</strong><small><i/> Tu copiloto empresarial</small></div><button type="button" onClick={() => setOpen(false)} aria-label="Cerrar ventana">×</button></header>
