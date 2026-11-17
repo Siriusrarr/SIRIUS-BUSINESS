@@ -47,6 +47,77 @@ export function SiriusAIPage({ onOpenAssistant }) {
   );
 }
 
+function splitCells(line) {
+  return line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map(cell => cell.trim().replace(/\\\|/g, '|'));
+}
+
+function isTableStart(lines, index) {
+  const header = lines[index];
+  const divider = lines[index + 1] || '';
+  if (!header.includes('|') || !divider.includes('|')) return false;
+  const cells = splitCells(divider);
+  return cells.length === splitCells(header).length && cells.every(cell => /^:?-{3,}:?$/.test(cell));
+}
+
+function messageBlocks(text) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  const blocks = [];
+  const bullet = /^\s*(?:[-*+]|\d+[.)])\s+/;
+  for (let i = 0; i < lines.length;) {
+    const line = lines[i++].trim();
+    if (!line) continue;
+    if (isTableStart(lines, i - 1)) {
+      const labels = splitCells(line);
+      const rows = [];
+      i++;
+      while (i < lines.length && lines[i].includes('|')) rows.push(splitCells(lines[i++]));
+      blocks.push({ type: 'table', labels, rows });
+    } else if (bullet.test(line)) {
+      const ordered = /^\d/.test(line);
+      const items = [line.replace(bullet, '')];
+      while (i < lines.length && bullet.test(lines[i]) && /^\d/.test(lines[i].trim()) === ordered) {
+        items.push(lines[i++].replace(bullet, ''));
+      }
+      blocks.push({ type: ordered ? 'ol' : 'ul', items });
+    } else if (!/^([-*_])(?:\s*\1){2,}$/.test(line)) {
+      blocks.push({ type: /^#{1,6}\s/.test(line) ? 'heading' : 'text', text: line.replace(/^#{1,6}\s+/, '') });
+    }
+  }
+  return blocks;
+}
+
+function inlineText(text) {
+  return text.split(/(\*\*[^*\n]+\*\*|__[^_\n]+__|\x60[^\x60\n]+\x60|\*[^*\n]+\*)/g).map((part, index) => {
+    if (/^(\*\*|__)/.test(part) && part.length > 4 && part.endsWith(part.slice(0, 2))) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith('\x60') && part.endsWith('\x60') && part.length > 2) return <code key={index}>{part.slice(1, -1)}</code>;
+    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) return <em key={index}>{part.slice(1, -1)}</em>;
+    return part;
+  });
+}
+
+function AssistantReply({ text }) {
+  return <div style={{ display: 'grid', gap: '0.65rem', minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+    {messageBlocks(text).map((block, index) => {
+      if (block.type === 'table') return <div key={index} style={{ display: 'grid', gap: '0.5rem' }}>
+        {block.rows.map((row, r) => <dl key={r} style={{ margin: 0, padding: '0.65rem', border: '1px solid #384461', borderRadius: 10, background: '#141d30' }}>
+          {block.labels.map((label, c) => <div key={c} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '0.5rem', padding: '0.2rem 0' }}>
+            <dt style={{ color: '#b9c5de' }}>{inlineText(label)}</dt>
+            <dd style={{ margin: 0, fontWeight: 600 }}>{inlineText(row[c] || '—')}</dd>
+          </div>)}
+        </dl>)}
+      </div>;
+      if (block.items) {
+        const List = block.type;
+        return <List key={index} style={{ margin: 0, paddingInlineStart: '1.25rem' }}>
+          {block.items.map((item, n) => <li key={n}>{inlineText(item)}</li>)}
+        </List>;
+      }
+      if (block.type === 'heading') return <strong key={index}>{inlineText(block.text)}</strong>;
+      return <p key={index} style={{ margin: 0 }}>{inlineText(block.text)}</p>;
+    })}
+  </div>;
+}
+
 export function SiriusAIFloating({ onOpenAI }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([welcome]);
@@ -114,7 +185,7 @@ export function SiriusAIFloating({ onOpenAI }) {
       <div className="sai-chat-messages" aria-live="polite">
         {messages.map((message, index) => <article className={'sai-message sai-message-' + message.role} key={index}>
           {message.role === 'assistant' && <span className="sai-message-avatar">✦</span>}
-          <div className="sai-message-bubble">{message.content}</div>
+          <div className="sai-message-bubble">{message.role === 'assistant' ? <AssistantReply text={message.content}/> : message.content}</div>
         </article>)}
         {sending && <article className="sai-message sai-message-assistant"><span className="sai-message-avatar">✦</span><div className="sai-message-bubble sai-typing"><i/><i/><i/><span>Sirius está pensando</span></div></article>}
         {error && <div className="sai-chat-error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => send(messages[messages.length - 1]?.content || '')}>Reintentar</button></div>}
