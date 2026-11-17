@@ -79,7 +79,6 @@ model Business {
   integrations Integration[]
   store StoreSettings?
   tutorialProgress TutorialProgress[]
-  assistantConversations AssistantConversation[]
   @@index([createdAt])
 }
 model BusinessMember {
