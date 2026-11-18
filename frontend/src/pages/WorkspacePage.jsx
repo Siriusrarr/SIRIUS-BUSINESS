@@ -1,7 +1,7 @@
 import PriceStudy from '../components/PriceStudy.jsx';
 import { Dashboard, Icon } from '../components/SpaceDashboard.jsx';
 import { SiriusChat } from '../components/SiriusAI.jsx';
-import{useEffect,useState}from'react';import{useNavigate}from'react-router-dom';import{useAuth}from'../context/AuthContext.jsx';import{businessApi}from'../services/businessApi.js';
+import{useEffect,useLayoutEffect,useRef,useState}from'react';import{useNavigate}from'react-router-dom';import{useAuth}from'../context/AuthContext.jsx';import{businessApi}from'../services/businessApi.js';
 const NAV=[{group:'PRINCIPAL',items:[['dashboard','Panel de control']]},{group:'OPERACIÓN',items:[['sales','Ventas'],['products','Inventario'],['finance','Finanzas'],['analysis','Análisis de precios'],['customers','Clientes'],['suppliers','Proveedores'],['promotions','Promociones']]},{group:'PLATAFORMA',items:[['sirius-ai','Sirius AI'],['store','Tienda virtual'],['integrations','Integraciones'],['plans','Suscripciones']]}];
 const TITLES={analysis:'Análisis de precios',dashboard:'Panel de control',sales:'Ventas',products:'Inventario',finance:'Finanzas',customers:'Clientes',suppliers:'Proveedores',promotions:'Promociones',store:'Tienda virtual',integrations:'Integraciones',plans:'Suscripciones','sirius-ai':'Sirius AI'};
 const GUIDES={
@@ -69,11 +69,33 @@ function PlansModule({user}){const names={free:'Free',entrepreneur:'Emprendedor'
 function GuideOverlay({step,index,total,onNext,onSkip,onBack}){
  const [rect,setRect]=useState(null);
  useEffect(()=>{let timer;const locate=()=>{const el=document.querySelector(step.target);if(!el){setRect(null);return false;}const r=el.getBoundingClientRect();setRect({top:r.top,left:r.left,width:r.width,height:r.height});return true;};const first=document.querySelector(step.target);if(first)first.scrollIntoView({block:'center',behavior:'smooth'});timer=setInterval(()=>{if(locate())clearInterval(timer);},140);locate();window.addEventListener('resize',locate);window.addEventListener('scroll',locate,true);return()=>{clearInterval(timer);window.removeEventListener('resize',locate);window.removeEventListener('scroll',locate,true);};},[step]);
- const top=rect?Math.min(Math.max(18,rect.top+rect.height+14),Math.max(18,window.innerHeight-230)):null;
- const left=rect?Math.min(Math.max(18,rect.left),Math.max(18,window.innerWidth-390)):null;
+ const cardRef=useRef(null);
+ const [size,setSize]=useState({width:0,height:0});
+ useLayoutEffect(()=>{
+   const card=cardRef.current;
+   const measure=()=>setSize({width:card.offsetWidth,height:card.offsetHeight});
+   measure();
+   const observer=new ResizeObserver(measure);
+   observer.observe(card);
+   return ()=>observer.disconnect();
+ },[]);
+ const margin=12, gap=14;
+ const width=document.documentElement.clientWidth, height=window.innerHeight;
+ const clamp=(value,max)=>Math.max(margin,Math.min(value,max-margin));
+ let top=(height-size.height)/2, left=(width-size.width)/2;
+ if(rect){
+   const bottom=rect.top+rect.height, right=rect.left+rect.width;
+   left=rect.left;
+   if(bottom+gap+size.height<=height-margin) top=bottom+gap;
+   else if(rect.top-gap-size.height>=margin) top=rect.top-gap-size.height;
+   else if(right+gap+size.width<=width-margin){left=right+gap;top=rect.top;}
+   else if(rect.left-gap-size.width>=margin){left=rect.left-gap-size.width;top=rect.top;}
+   else top=rect.top>height-bottom?margin:height-margin-size.height;
+ }
+ const position={top:clamp(top,height-size.height),left:clamp(left,width-size.width)};
  return <div className="sb-guide-layer" role="presentation">
   {rect&&<div className="sb-guide-spotlight" style={{top:rect.top-5,left:rect.left-5,width:rect.width+10,height:rect.height+10}}/>}
-  <section className="sb-guide-card" role="dialog" aria-modal="true" aria-labelledby="sb-guide-title" style={rect?{top,left}:undefined}>
+  <section ref={cardRef} className="sb-guide-card" role="dialog" aria-modal="true" aria-labelledby="sb-guide-title" style={position}>
    <div className="sb-guide-top"><span>SIRIUS GUIDE · PASO {index+1} DE {total}</span><button type="button" onClick={onSkip} aria-label="Cerrar guía">Saltar guía ×</button></div>
    <div className="sb-guide-progress"><i style={{width:`${(index+1)/total*100}%`}}/></div>
    <span className="sb-guide-eyebrow">APRENDE A UTILIZAR ESTE MÓDULO</span><h2 id="sb-guide-title">{step.title}</h2><p>{step.body}</p>
