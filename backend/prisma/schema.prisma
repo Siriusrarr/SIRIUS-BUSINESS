@@ -72,6 +72,7 @@ model Business {
   owner User @relation("BusinessOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members BusinessMember[]
   products Product[]
+  priceStudies PriceStudy[]
   customers Customer[]
   suppliers Supplier[]
   sales Sale[]
@@ -240,6 +241,25 @@ model TutorialProgress {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@unique([businessId, userId])
+}
+
+model PriceStudy {
+  id String @id @default(uuid()) @db.Uuid
+  businessId String @db.Uuid
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  inputs Json
+  results PriceResult[]
+  @@index([businessId, createdAt])
+}
+
+model PriceResult {
+  id String @id @default(uuid()) @db.Uuid
+  studyId String @db.Uuid
+  study PriceStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  method String
+  output Json
+  @@unique([studyId, method])
 }
 
 model SiriusThread {
