@@ -58,7 +58,7 @@
 .sb-guide-actions button:disabled{opacity:.4;cursor:not-allowed}
 .sb-user{display:flex;flex-direction:column;align-items:flex-end}
 @media(max-width:650px){
- .sb-guide-card{left:18px!important;top:auto!important;bottom:18px;width:calc(100vw - 36px)}
+ .sb-guide-card{width:calc(100vw - 36px)}
  .sb-guide-spotlight{border-radius:9px}
  .sb-guide-actions button{min-width:0;flex:1}
 }
