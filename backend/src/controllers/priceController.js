@@ -13,10 +13,20 @@ export async function calculate(req,res) {
   res.status(201).json(study);
 }
 export async function history(req,res) {
-  res.json(await prisma.priceStudy.findMany({where:{businessId:req.business.id},orderBy:{createdAt:'desc'},take:30,select:{id:true,createdAt:true,inputs:true}}));
+  res.json(await prisma.priceStudy.findMany({where:{businessId:req.business.id},orderBy:{createdAt:'desc'},select:{id:true,createdAt:true,inputs:true}}));
 }
 export async function detail(req,res) {
   const study=await prisma.priceStudy.findFirst({where:{businessId:req.business.id,id:req.params.id},include:{results:true}});
   if (!study) throw new HttpError(404,'Cálculo no encontrado.','NOT_FOUND');
   res.json(study);
+}
+
+export async function removeStudy(req,res) {
+  const {id}=req.params;
+  if(id && !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(id)) throw new HttpError(400,'Registro inválido.','INVALID_ID');
+  const where={businessId:req.business.id};
+  if(id) where.id=id;
+  const result=await prisma.priceStudy.deleteMany({where});
+  if(id && !result.count) throw new HttpError(404,'Cálculo no encontrado.','NOT_FOUND');
+  res.json({removed:result.count});
 }
