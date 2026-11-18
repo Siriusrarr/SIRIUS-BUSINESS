@@ -5,13 +5,15 @@ import { createSiriusImage } from '../controllers/siriusImageController.js';
 import * as c from '../controllers/businessController.js';
 import { chatWithSirius, listConversations, getConversation } from '../controllers/siriusAIController.js';
 
-import { calculate, history, detail } from '../controllers/priceController.js';
+import { calculate, history, detail, removeStudy } from '../controllers/priceController.js';
 
 const router=Router();
 router.use(authenticate);
 router.get('/business',c.getBusiness);
 router.post('/business',c.createBusiness);
 router.use(requireBusiness);
+router.delete('/price-studies/:id', removeStudy);
+router.delete('/price-studies', removeStudy);
 router.post('/price-studies', calculate);
 router.get('/price-studies', history);
 router.get('/price-studies/:id', detail);
