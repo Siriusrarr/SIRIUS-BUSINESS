@@ -1,0 +1,22 @@
+.price-lab .price-intro {border-top:3px solid #aa97ff;background:linear-gradient(115deg,#202039,#131928 65%)}
+.price-lab .price-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}
+.price-fields>h2,.price-fields>p,.price-fields>.price-guide {grid-column:1/-1;margin:0}
+.price-fields>.price-guide {justify-self:start}
+.price-fields>.sb-field {padding:.9rem;border:1px solid #343e56;border-radius:.8rem;background:#121829;height:100%}
+.price-fields>.sb-field:focus-within {border-color:#aa97ff}
+.price-fields>button[data-guide="price-next"] {grid-column:2;align-self:end}
+.price-lab .price-record {margin:.25rem .4rem .25rem 0}
+.price-chart {padding:1rem 0}
+.price-chart select {margin-top:.4rem}
+.price-chart svg {width:100%;max-width:52rem;background:#101725;border-radius:.75rem}
+.price-chart svg text {fill:#d5deef;font:13px system-ui}
+.price-lab table {width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.price-lab th,.price-lab td {padding:.6rem;text-align:right;border-bottom:1px solid #374259}
+.price-lab summary {cursor:pointer;padding:.65rem 0}
+@media(prefers-reduced-motion:no-preference){
+ .price-fields,.price-chart>div,.price-lab article {animation:price-arrive .28s ease-out both}
+ .price-lab button {transition:transform .16s ease,background-color .16s ease}
+ .price-lab button:hover:not(:disabled) {transform:translateY(-2px)}
+ @keyframes price-arrive {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+@media(max-width:680px){.price-lab .price-fields{grid-template-columns:1fr}.price-fields>button[data-guide="price-next"]{grid-column:1}}
