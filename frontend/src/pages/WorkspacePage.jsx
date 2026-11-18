@@ -1,9 +1,15 @@
+import PriceStudy from '../components/PriceStudy.jsx';
 import { Dashboard, Icon } from '../components/SpaceDashboard.jsx';
 import { SiriusChat } from '../components/SiriusAI.jsx';
 import{useEffect,useState}from'react';import{useNavigate}from'react-router-dom';import{useAuth}from'../context/AuthContext.jsx';import{businessApi}from'../services/businessApi.js';
-const NAV=[{group:'PRINCIPAL',items:[['dashboard','Panel de control']]},{group:'OPERACIÓN',items:[['sales','Ventas'],['products','Inventario'],['finance','Finanzas'],['customers','Clientes'],['suppliers','Proveedores'],['promotions','Promociones']]},{group:'PLATAFORMA',items:[['sirius-ai','Sirius AI'],['store','Tienda virtual'],['integrations','Integraciones'],['plans','Suscripciones']]}];
-const TITLES={dashboard:'Panel de control',sales:'Ventas',products:'Inventario',finance:'Finanzas',customers:'Clientes',suppliers:'Proveedores',promotions:'Promociones',store:'Tienda virtual',integrations:'Integraciones',plans:'Suscripciones','sirius-ai':'Sirius AI'};
+const NAV=[{group:'PRINCIPAL',items:[['dashboard','Panel de control']]},{group:'OPERACIÓN',items:[['sales','Ventas'],['products','Inventario'],['finance','Finanzas'],['analysis','Análisis de precios'],['customers','Clientes'],['suppliers','Proveedores'],['promotions','Promociones']]},{group:'PLATAFORMA',items:[['sirius-ai','Sirius AI'],['store','Tienda virtual'],['integrations','Integraciones'],['plans','Suscripciones']]}];
+const TITLES={analysis:'Análisis de precios',dashboard:'Panel de control',sales:'Ventas',products:'Inventario',finance:'Finanzas',customers:'Clientes',suppliers:'Proveedores',promotions:'Promociones',store:'Tienda virtual',integrations:'Integraciones',plans:'Suscripciones','sirius-ai':'Sirius AI'};
 const GUIDES={
+analysis:[
+  {target:'[data-guide="price-method"]',title:'Escoge el recorrido',body:'Bisección acorta un intervalo. Newton ajusta un precio inicial. Comparar prueba los dos con el mismo negocio.'},
+  {target:'[data-guide="price-form"]',title:'Prueba un escenario',body:'Usa los valores del ejemplo de mini donas o escribe tus costos, demanda y meta. Después elige desde qué precios empezar.'},
+  {target:'[data-guide="price-history"]',title:'Consulta el procedimiento',body:'Cada cálculo queda guardado en tu negocio. Abre un registro para revisar los valores usados y cada paso.'}
+],
 'sirius-ai': [
   {target:'.sai-chat-page .sai-mode',title:'Elige cómo usar Sirius',body:'Usa Consultas para hablar con Groq sobre tu negocio. En Imágenes puedes describir una idea, generarla con Cloudflare Workers AI y descargar el resultado.'},
   {target:'.sai-chat-page .sai-chat-messages',title:'Tu conversación con Sirius',body:'Aquí aparecen tus preguntas y las respuestas sobre tu negocio. Puedes continuar la conversación que abriste en el chat flotante.'},
@@ -40,6 +46,7 @@ useEffect(()=>{if(loading||!tutorial||guideSection)return;const completed=tutori
 if(loading)return <div className="sb-loading">Preparando tu espacio empresarial…</div>;
 return <div className="sb-app"><aside className="sb-sidebar"><div className="sb-brand"><span className="sb-brand-icon"><Icon name="orbit"/></span><span><b>SIRIUS</b><small>BUSINESS</small></span></div><div className="sb-business"><span className="sb-online"/> Tu espacio<strong>{business?.name}</strong><small>Cuenta empresarial</small></div>{NAV.map(g=><div className="sb-nav-group" key={g.group} data-guide-menu={g.group}><small>{g.group}</small>{g.items.map(([id,label])=><button key={id} className={section===id?'active':''} aria-current={section===id?'page':undefined} onClick={()=>openSection(id)}><Icon name={id}/>{label}</button>)}</div>)}<div className="sb-sidebar-bottom"><span>{user?.name}</span><button data-guide="account-menu" onClick={()=>navigate("/account")}>Mi cuenta</button><button onClick={replayTour}>Sirius Guide · Repetir</button><button onClick={signOut}>Cerrar sesión</button></div></aside>
 <main className="sb-main"><header className="sb-topbar"><div><span className="sb-kicker">TU NEGOCIO, EN ÓRBITA</span><h1>{TITLES[section]}</h1></div><div className="sb-user">{user?.name}<span>{business?.name}</span><button className="sb-guide-trigger" onClick={()=>startGuide(section)} type="button">? Guía de esta sección</button></div></header>{notice&&<div className="sb-notice" role="alert">{notice} <button className="sb-secondary" onClick={()=>window.location.reload()}>Reintentar</button></div>}
+{section==='analysis'&&<PriceStudy/>}
 {section==='dashboard'&&dashboard&&<Dashboard data={dashboard} business={business} onNavigate={openSection} onTour={()=>startGuide('dashboard')}/>}
 
 {['products','customers','suppliers','promotions'].includes(section)&&<CrudModule key={section} resource={section} title={TITLES[section]} onChanged={async()=>setDashboard(await businessApi.dashboard())}/>}

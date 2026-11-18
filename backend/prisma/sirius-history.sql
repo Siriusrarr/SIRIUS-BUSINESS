@@ -16,4 +16,18 @@ CREATE TABLE IF NOT EXISTS "SiriusTurn" (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS "SiriusTurn_threadId_createdAt_idx" ON "SiriusTurn" ("threadId", "createdAt");
+CREATE TABLE IF NOT EXISTS "PriceStudy" (
+  "id" UUID PRIMARY KEY,
+  "businessId" UUID NOT NULL REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "inputs" JSONB NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "PriceStudy_businessId_createdAt_idx" ON "PriceStudy" ("businessId","createdAt");
+CREATE TABLE IF NOT EXISTS "PriceResult" (
+  "id" UUID PRIMARY KEY,
+  "studyId" UUID NOT NULL REFERENCES "PriceStudy"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  "method" TEXT NOT NULL,
+  "output" JSONB NOT NULL,
+  UNIQUE ("studyId","method")
+);
 COMMIT;
