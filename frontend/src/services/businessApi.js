@@ -2,6 +2,7 @@ const API='/api';
 async function request(path,options={}){const r=await fetch(`${API}${path}`,{...options,credentials:'same-origin',headers:{...(options.body?{'Content-Type':'application/json'}:{}),...options.headers}});const data=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(data.message||'No se pudo completar la operación.');e.code=data.code;e.status=r.status;throw e;}return data;}
 const json=(method,body)=>({method,body:JSON.stringify(body)});
 export const businessApi={chatWithSirius:(message,conversationId,requestId)=>request('/sirius-ai/chat',json('POST',{message,conversationId,requestId})),
+removePrice:id=>request(id?'/price-studies/'+encodeURIComponent(id):'/price-studies',{method:'DELETE'}),
 priceHistory:()=>request('/price-studies'),
 priceDetail:id=>request('/price-studies/'+encodeURIComponent(id)),
 calculatePrice:values=>request('/price-studies',json('POST',values)),
