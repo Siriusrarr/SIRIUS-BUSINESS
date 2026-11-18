@@ -1,22 +1,36 @@
-.price-lab .price-intro {border-top:3px solid #aa97ff;background:linear-gradient(115deg,#202039,#131928 65%)}
-.price-lab .price-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}
-.price-fields>h2,.price-fields>p,.price-fields>.price-guide {grid-column:1/-1;margin:0}
-.price-fields>.price-guide {justify-self:start}
-.price-fields>.sb-field {padding:.9rem;border:1px solid #343e56;border-radius:.8rem;background:#121829;height:100%}
-.price-fields>.sb-field:focus-within {border-color:#aa97ff}
-.price-fields>button[data-guide="price-next"] {grid-column:2;align-self:end}
-.price-lab .price-record {margin:.25rem .4rem .25rem 0}
-.price-chart {padding:1rem 0}
-.price-chart select {margin-top:.4rem}
-.price-chart svg {width:100%;max-width:52rem;background:#101725;border-radius:.75rem}
-.price-chart svg text {fill:#d5deef;font:13px system-ui}
-.price-lab table {width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
-.price-lab th,.price-lab td {padding:.6rem;text-align:right;border-bottom:1px solid #374259}
-.price-lab summary {cursor:pointer;padding:.65rem 0}
-@media(prefers-reduced-motion:no-preference){
- .price-fields,.price-chart>div,.price-lab article {animation:price-arrive .28s ease-out both}
- .price-lab button {transition:transform .16s ease,background-color .16s ease}
- .price-lab button:hover:not(:disabled) {transform:translateY(-2px)}
- @keyframes price-arrive {from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-}
-@media(max-width:680px){.price-lab .price-fields{grid-template-columns:1fr}.price-fields>button[data-guide="price-next"]{grid-column:1}}
+.price-lab .price-intro{border-top:3px solid #aa97ff;background:linear-gradient(115deg,#202039,#131928 65%)}
+.price-lab .price-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.15rem 1.4rem;align-items:end}
+.price-fields>h2,.price-fields>p,.price-fields>.price-guide{grid-column:1/-1;margin:0}
+.price-fields>.price-guide{justify-self:start}
+.price-lab .price-fields>.sb-field{display:grid;gap:.48rem;min-width:0;margin:0;color:#c5cce0}
+.price-lab .price-fields>.sb-field input[type="number"]{box-sizing:border-box!important;width:100%!important;min-width:0;min-height:48px;padding:.72rem .9rem!important;border:1px solid #3c4661!important;border-radius:.7rem!important;background:#0b1120!important;color:#f5f7ff!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);color-scheme:dark;font:inherit;font-variant-numeric:tabular-nums;appearance:textfield}
+.price-lab .price-fields>.sb-field input[type="number"]:focus{outline:2px solid #a99bff!important;outline-offset:2px;border-color:#a99bff!important;box-shadow:0 0 0 5px rgba(169,155,255,.09)!important}
+.price-lab .price-fields>.sb-field input[type="number"]::-webkit-inner-spin-button{opacity:.45}
+.price-fields>button[data-guide="price-next"]{grid-column:2;align-self:end;min-height:48px}
+.price-lab .price-record{margin:.25rem .4rem .25rem 0}
+.price-chart{margin-top:1.25rem;padding:1.15rem;border:1px solid #303952;border-radius:1rem;background:linear-gradient(145deg,rgba(23,31,51,.9),rgba(13,19,34,.94))}
+.price-chart-toolbar{display:flex;justify-content:flex-end}
+.price-chart-content{margin-top:1rem}
+.price-chart-metric{display:grid;gap:.45rem;max-width:30rem;color:#c7cde0}
+.price-chart-metric select{min-height:46px;padding:0 .85rem;border:1px solid #3b4560;border-radius:.7rem;background:#0b1120;color:#f4f6ff}
+.price-chart-help{color:#aeb8ce}
+.price-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}
+.price-chart-grid.single{grid-template-columns:minmax(0,48rem)}
+.price-graph-card{min-width:0;padding:1rem;border:1px solid #303a54;border-radius:.9rem;background:#0d1424;box-shadow:0 14px 35px rgba(0,0,0,.16)}
+.price-graph-card header{display:flex;align-items:center;gap:.7rem}
+.price-graph-card header h3,.price-graph-card header p{margin:0}
+.price-graph-card header p{color:#929eb7;font-size:.84rem}
+.price-graph-dot{width:.72rem;height:.72rem;border-radius:50%;box-shadow:0 0 16px currentColor}
+.price-graph-card svg{display:block;width:100%;margin-top:.8rem;background:#101827;border-radius:.7rem}
+.price-graph-card svg text{fill:#bac5da;font:12px system-ui}
+.price-graph-card svg .grid{stroke:#3a4660;stroke-width:1}
+.price-graph-card svg .zero{stroke:#7886a5;stroke-width:1.5}
+.price-graph-card footer{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:.7rem;color:#9eabc2}
+.price-graph-card footer strong{color:#f3f5ff;font-variant-numeric:tabular-nums}
+.price-lab table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.price-lab th,.price-lab td{padding:.6rem;text-align:right;border-bottom:1px solid #374259}
+.price-lab summary{cursor:pointer;padding:.65rem 0}
+@media(prefers-reduced-motion:no-preference){.price-fields,.price-chart-content,.price-lab article{animation:price-arrive .28s ease-out both}.price-lab button{transition:transform .16s ease,background-color .16s ease}.price-lab button:hover:not(:disabled){transform:translateY(-2px)}@keyframes price-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+@media(max-width:900px){.price-chart-grid{grid-template-columns:1fr}}
+@media(max-width:680px){.price-lab .price-fields{grid-template-columns:1fr}.price-fields>button[data-guide="price-next"]{grid-column:1}.price-chart{padding:.8rem}.price-graph-card{padding:.7rem}}
+
