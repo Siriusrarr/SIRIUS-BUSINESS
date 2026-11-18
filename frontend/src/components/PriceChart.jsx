@@ -1,31 +1,42 @@
 import {useState} from 'react';
 
-const format=new Intl.NumberFormat('es-CO',{maximumFractionDigits:3});
 const names={bis:'Bisección',newton:'Newton-Raphson'};
-const colors={bis:'#a69aff',newton:'#54dfcb'};
+const colors={bis:'#a99bff',newton:'#57ddce'};
+const compact=new Intl.NumberFormat('es-CO',{notation:'compact',maximumFractionDigits:2});
+const decimal=new Intl.NumberFormat('es-CO',{maximumFractionDigits:3});
+
+function clean(value){return Math.abs(value)<0.0005?0:value;}
+function valueLabel(value){return '$ '+decimal.format(clean(value));}
+
+function MethodGraph({method,values,metric}){
+  const normalized=values.map(clean);
+  const scale=[...normalized,...(metric==='gap'?[0]:[])];
+  const min=Math.min(...scale),max=Math.max(...scale);
+  const x=index=>64+456*index/Math.max(1,normalized.length-1);
+  const y=value=>max===min?96:158-124*(value-min)/(max-min);
+  const ticks=[max,...(metric==='gap'?[0]:[]),min].filter((value,index,array)=>array.indexOf(value)===index);
+  return <article className="price-graph-card">
+    <header><span className="price-graph-dot" style={{background:colors[method]}}/><div><h3>{names[method]}</h3><p>{normalized.length} {normalized.length===1?'paso':'pasos'} registrados</p></div></header>
+    <svg viewBox="0 0 550 205" role="img" aria-label={`${names[method]}: ${metric==='price'?'precio':'diferencia con la meta'} por paso`}>
+      {ticks.map(value=><g key={value}><line x1="64" x2="520" y1={y(value)} y2={y(value)} className={value===0?'zero':'grid'}/><text x="56" y={y(value)+4} textAnchor="end">{compact.format(value)}</text></g>)}
+      <polyline points={normalized.map((value,index)=>`${x(index)},${y(value)}`).join(' ')} fill="none" stroke={colors[method]} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round"/>
+      {normalized.map((value,index)=><circle key={index} cx={x(index)} cy={y(value)} r="3.5" fill={colors[method]}><title>Paso {index+1}: {valueLabel(value)}</title></circle>)}
+      <text x="64" y="185">1</text><text x="520" y="185" textAnchor="end">{normalized.length}</text><text x="292" y="199" textAnchor="middle">Paso del método</text>
+    </svg>
+    <footer><span>Último valor</span><strong>{valueLabel(normalized.at(-1))}</strong></footer>
+  </article>;
+}
 
 export default function PriceChart({study}){
-  const [open,setOpen]=useState(false);
-  const [metric,setMetric]=useState('price');
-  const series=study.results.map(({method,output})=>{
-    const values=output.rows.map(row=>metric==='price'?row[method==='bis'?2:1]:row[method==='bis'?3:2]);
-    return {method,values};
-  }).filter(s=>s.values.length);
-  const values=series.flatMap(s=>s.values);
-  const count=Math.max(1,...series.map(s=>s.values.length));
-  const min=Math.min(...values,...(metric==='gap'?[0]:[]));
-  const max=Math.max(...values,...(metric==='gap'?[0]:[]));
-  const x=i=>78+444*i/Math.max(1,count-1);
-  const y=v=>max===min?94:161-132*(v-min)/(max-min);
-  return <section className="price-chart" data-guide="price-chart"><button className="sb-secondary" aria-expanded={open} onClick={()=>setOpen(!open)}>{open?'Ocultar gráfica':'Crear gráfica'}</button>
-    {open&&<div>{!series.length?<p>El cálculo terminó antes de registrar pasos. Consulta el resultado arriba.</p>:<>
-      <label className="sb-field">Qué quieres ver<select value={metric} onChange={e=>setMetric(e.target.value)}><option value="price">Precio probado en cada paso</option><option value="gap">Ganancia menos meta en cada paso</option></select></label>
-      <p>{metric==='price'?'Sigue los precios que probó cada método, en pesos por unidad.':'Por encima de cero se supera la meta mensual. Por debajo, todavía falta ganancia.'}</p>
-      <svg viewBox="0 0 550 210" role="img" aria-label={metric==='price'?'Precio en pesos por paso':'Diferencia con la meta en pesos por paso'}>
-        {[...new Set([max,min,...(metric==='gap'?[0]:[])])].map(v=><g key={v}><line x1="78" x2="522" y1={y(v)} y2={y(v)} stroke="#52617b"/><text x="70" y={y(v)+4} textAnchor="end">{new Intl.NumberFormat('es-CO',{notation:'compact',maximumFractionDigits:2}).format(v)}</text></g>)}
-        {series.map(({method,values})=><g key={method}><polyline points={values.map((v,i)=>x(i)+','+y(v)).join(' ')} fill="none" stroke={colors[method]} strokeWidth="2.5" strokeDasharray={method==='newton'?'6 3':undefined}/><circle cx={x(values.length-1)} cy={y(values.at(-1))} r="4" fill={colors[method]}/></g>)}
-        <text x="78" y="187">1</text>{count>1&&<text x="522" y="187" textAnchor="end">{count}</text>}<text x="300" y="202" textAnchor="middle">Paso del método</text>
-      </svg>
-      {series.map(s=><p key={s.method} style={{color:colors[s.method]}}>{names[s.method]} · {s.method==='bis'?'línea continua':'línea discontinua'} · último paso graficado: $ {format.format(s.values.at(-1))}</p>)}
-    </>}</div>}</section>;
+  const [open,setOpen]=useState(false),[metric,setMetric]=useState('price');
+  const series=study.results.map(({method,output})=>({method,values:output.rows.map(row=>metric==='price'?row[method==='bis'?2:1]:row[method==='bis'?3:2])})).filter(series=>series.values.length);
+  return <section className="price-chart" data-guide="price-chart">
+    <div className="price-chart-toolbar"><button type="button" className="sb-secondary" aria-expanded={open} onClick={()=>setOpen(!open)}>{open?'Ocultar gráficas':series.length>1?'Crear las dos gráficas':'Crear gráfica'}</button></div>
+    {open&&<div className="price-chart-content">{!series.length?<p>El cálculo terminó antes de registrar pasos.</p>:<>
+      <label className="price-chart-metric">Qué quieres analizar<select value={metric} onChange={event=>setMetric(event.target.value)}><option value="price">Precio probado en cada paso</option><option value="gap">Diferencia entre ganancia y meta</option></select></label>
+      <p className="price-chart-help">{metric==='price'?'Cada gráfica usa su propia escala para mostrar claramente cómo cambia el precio.':'Cero significa que se alcanzó la meta. Los valores positivos la superan y los negativos indican cuánto falta.'}</p>
+      <div className={`price-chart-grid ${series.length===1?'single':''}`}>{series.map(series=><MethodGraph key={series.method} {...series} metric={metric}/>)}</div>
+    </>}</div>}
+  </section>;
 }
+
